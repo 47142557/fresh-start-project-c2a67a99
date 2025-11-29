@@ -507,8 +507,8 @@ const FormQuote = () => {
   return (
     <>
       <style>{customStyles}</style>
-      <div className="main-container max-w-lg mx-auto p-4 sm:p-6 bg-white rounded-xl shadow-2xl">
-        <h1 style={{ color: PRIMARY_COLOR }} className="text-xl font-bold text-center mb-6">Cotizador de Planes</h1>
+      <div className="main-container w-full p-6 sm:p-8 bg-background">
+        <h1 style={{ color: PRIMARY_COLOR }} className="text-2xl font-bold text-center mb-8">Cotizador de Planes</h1>
 
         {/* Progress/Step Indicator */}
         <div className="flex justify-between text-xs sm:text-sm font-semibold mb-8">
