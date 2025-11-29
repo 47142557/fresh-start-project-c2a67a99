@@ -386,18 +386,7 @@ export const HealthPlanComparisonModal = ({
         
         <div className="w-full overflow-x-auto border-b border-border bg-background shadow-sm shrink-0 z-40">
           <table className="min-w-full table-fixed">
-            <thead>
-              <tr>
-                <th className="w-48 px-4 py-3 sticky left-0 bg-background z-10 min-w-[250px] border-r border-border">
-                  {/* Espacio para alinear */}
-                </th>
-                {plansToCompare.map(plan => (
-                  <th key={plan._id} className="min-w-[250px] border-l border-border p-0">
-                    <PlanHeader plan={plan} onRemovePlan={onRemovePlan} />
-                  </th>
-                ))}
-              </tr>
-            </thead>
+  
           </table>
         </div>
         
