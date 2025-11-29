@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 // --- INTERFACES ---
 interface Ubicacion {
@@ -46,10 +47,10 @@ interface HealthPlan {
 }
 
 interface ComparisonPageProps {
-  plansToCompare: HealthPlan[];
-  allAvailablePlans: HealthPlan[];
-  onAddPlan: (planId: string) => void;
-  onRemovePlan: (planId: string) => void;
+  plansToCompare?: HealthPlan[];
+  allAvailablePlans?: HealthPlan[];
+  onAddPlan?: (planId: string) => void;
+  onRemovePlan?: (planId: string) => void;
 }
 
 // --- CONSTANTS ---
@@ -121,15 +122,76 @@ PlanHeader.displayName = "PlanHeader";
 
 // --- MAIN COMPONENT ---
 export const ComparisonPage = ({
-  plansToCompare,
-  allAvailablePlans,
-  onAddPlan,
-  onRemovePlan,
+  plansToCompare: propPlansToCompare,
+  allAvailablePlans: propAllAvailablePlans,
+  onAddPlan: propOnAddPlan,
+  onRemovePlan: propOnRemovePlan,
 }: ComparisonPageProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("beneficios"); 
   const [activeClinicaTab, setActiveClinicaTab] = useState("todas"); 
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Internal state management
+  const [internalPlansToCompare, setInternalPlansToCompare] = useState<HealthPlan[]>([]);
+  const [internalAllPlans, setInternalAllPlans] = useState<HealthPlan[]>([]);
+  
+  // Use props if provided, otherwise use internal state from sessionStorage
+  const plansToCompare = propPlansToCompare || internalPlansToCompare;
+  const allAvailablePlans = propAllAvailablePlans || internalAllPlans;
+  
+  useEffect(() => {
+    // Load data from sessionStorage if not provided via props
+    if (!propPlansToCompare || !propAllAvailablePlans) {
+      const storedComparisonPlans = sessionStorage.getItem('comparisonPlans');
+      const storedAllPlans = sessionStorage.getItem('allPlans');
+      
+      if (storedComparisonPlans && storedAllPlans) {
+        try {
+          setInternalPlansToCompare(JSON.parse(storedComparisonPlans));
+          setInternalAllPlans(JSON.parse(storedAllPlans));
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "No se pudieron cargar los planes de comparación",
+            variant: "destructive"
+          });
+          navigate('/');
+        }
+      } else {
+        navigate('/');
+      }
+    }
+  }, [propPlansToCompare, propAllAvailablePlans, navigate, toast]);
+  
+  const handleAddPlan = (planId: string) => {
+    if (propOnAddPlan) {
+      propOnAddPlan(planId);
+    } else {
+      if (internalPlansToCompare.length < 4) {
+        const planToAdd = internalAllPlans.find(p => p._id === planId);
+        if (planToAdd && !internalPlansToCompare.find(p => p._id === planId)) {
+          const newPlans = [...internalPlansToCompare, planToAdd];
+          setInternalPlansToCompare(newPlans);
+          sessionStorage.setItem('comparisonPlans', JSON.stringify(newPlans));
+        }
+      }
+    }
+  };
+  
+  const handleRemovePlan = (planId: string) => {
+    if (propOnRemovePlan) {
+      propOnRemovePlan(planId);
+    } else {
+      const newPlans = internalPlansToCompare.filter(p => p._id !== planId);
+      setInternalPlansToCompare(newPlans);
+      sessionStorage.setItem('comparisonPlans', JSON.stringify(newPlans));
+    }
+  };
+  
+  const onAddPlan = propOnAddPlan || handleAddPlan;
+  const onRemovePlan = propOnRemovePlan || handleRemovePlan;
   
   // --- DATA LOGIC ---
   const plansToAdd = useMemo(() => {

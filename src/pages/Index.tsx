@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Grid3x3, List, Plus, Minus } from "lucide-react";
 import { QuoteModal } from "@/components/QuoteModal";
 import { FloatingQuoteButton } from "@/components/FloatingQuoteButton";
 import { ComparisonBar } from "@/components/ComparisonBar";
-import { HealthPlanComparisonModal } from "@/components/HealthPlanComparisonModal";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,6 +49,7 @@ interface HealthPlan {
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState([0, 600]);
@@ -60,7 +61,6 @@ const Index = () => {
   const [selectedClinicas, setSelectedClinicas] = useState<Clinica[]>([]);
   const [openClinicSearch, setOpenClinicSearch] = useState(false);
   const [comparisonPlans, setComparisonPlans] = useState<string[]>([]);
-  const [comparisonModalOpen, setComparisonModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -142,33 +142,22 @@ const Index = () => {
     comparisonPlans.includes(plan._id)
   );
 
-  const handleAddPlanToComparison = (planId: string) => {
-    if (comparisonPlans.length < 3 && !comparisonPlans.includes(planId)) {
-      setComparisonPlans(prev => [...prev, planId]);
-    }
-  };
-
-  const handleRemovePlanFromComparison = (planId: string) => {
-    setComparisonPlans(prev => prev.filter(id => id !== planId));
+  const handleCompare = () => {
+    // Store comparison data in sessionStorage to pass to comparison page
+    sessionStorage.setItem('comparisonPlans', JSON.stringify(comparisonPlansList));
+    sessionStorage.setItem('allPlans', JSON.stringify(healthPlans));
+    navigate('/comparar');
   };
 
   return (
     <div className="min-h-screen bg-secondary/30">
       <FloatingQuoteButton onClick={() => setQuoteModalOpen(true)} />
       <QuoteModal open={quoteModalOpen} onOpenChange={setQuoteModalOpen} />
-      <HealthPlanComparisonModal
-        plansToCompare={comparisonPlansList}
-        allAvailablePlans={healthPlans}
-        onAddPlan={handleAddPlanToComparison}
-        onRemovePlan={handleRemovePlanFromComparison}
-        open={comparisonModalOpen}
-        onOpenChange={setComparisonModalOpen}
-      />
       <ComparisonBar 
         plans={comparisonPlansList}
         onRemove={toggleComparison}
-        onCompare={() => setComparisonModalOpen(true)}
-        isComparisonModalOpen={comparisonModalOpen}
+        onCompare={handleCompare}
+        isComparisonModalOpen={false}
       />
       
       <div className="flex">
