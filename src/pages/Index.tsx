@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Grid3x3, List } from "lucide-react";
+import { QuoteModal } from "@/components/QuoteModal";
+import { FloatingQuoteButton } from "@/components/FloatingQuoteButton";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -8,70 +11,46 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-// Sample data
-const healthPlans = [
-  {
-    id: 1,
-    name: "Plan Básico",
-    provider: "Salud Plus",
-    price: 150,
-    rating: 4.2,
-    coverage: "Cobertura básica nacional",
-    features: ["Consultas ilimitadas", "Emergencias 24/7", "Medicamentos básicos"]
-  },
-  {
-    id: 2,
-    name: "Plan Premium",
-    provider: "Vida Segura",
-    price: 280,
-    rating: 4.8,
-    coverage: "Cobertura completa internacional",
-    features: ["Consultas especializadas", "Cirugías incluidas", "Dental completo", "Visión"]
-  },
-  {
-    id: 3,
-    name: "Plan Familiar",
-    provider: "Familia Care",
-    price: 450,
-    rating: 4.5,
-    coverage: "Cobertura familiar hasta 5 personas",
-    features: ["Pediatría", "Maternidad", "Vacunas incluidas", "Emergencias"]
-  },
-  {
-    id: 4,
-    name: "Plan Joven",
-    provider: "Salud Plus",
-    price: 120,
-    rating: 4.0,
-    coverage: "Cobertura para menores de 30 años",
-    features: ["Consultas básicas", "Emergencias", "Telemedicina"]
-  },
-  {
-    id: 5,
-    name: "Plan Senior",
-    provider: "Vida Segura",
-    price: 320,
-    rating: 4.6,
-    coverage: "Cobertura especializada +60 años",
-    features: ["Geriatría", "Cardiología", "Medicamentos crónicos", "Rehabilitación"]
-  },
-  {
-    id: 6,
-    name: "Plan Ejecutivo",
-    provider: "Elite Health",
-    price: 550,
-    rating: 4.9,
-    coverage: "Cobertura ejecutiva premium",
-    features: ["Clínicas privadas", "Sin copagos", "Atención VIP", "Internacional"]
-  }
-];
+interface HealthPlan {
+  id: number;
+  name: string;
+  provider: string;
+  price: number;
+  rating: number;
+  coverage: string;
+  features: string[];
+}
 
 const Index = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceRange, setPriceRange] = useState([0, 600]);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [minRating, setMinRating] = useState([0]);
+  const [healthPlans, setHealthPlans] = useState<HealthPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [quoteModalOpen, setQuoteModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await fetch('https://servidorplus.avalianonline.com.ar/planes');
+        const data = await response.json();
+        setHealthPlans(data);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los planes",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, [toast]);
 
   const providers = Array.from(new Set(healthPlans.map(p => p.provider)));
 
@@ -95,6 +74,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-secondary/30">
+      <FloatingQuoteButton onClick={() => setQuoteModalOpen(true)} />
+      <QuoteModal open={quoteModalOpen} onOpenChange={setQuoteModalOpen} />
+      
       <div className="flex">
         {/* Sidebar de Filtros */}
         <aside className="w-80 bg-background border-r border-border p-6 sticky top-0 h-screen overflow-y-auto">
@@ -211,11 +193,16 @@ const Index = () => {
           </div>
 
           {/* Cards Grid/List */}
-          <div className={
-            viewMode === "grid"
-              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              : "flex flex-col gap-4"
-          }>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Cargando planes...</p>
+            </div>
+          ) : (
+            <div className={
+              viewMode === "grid"
+                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                : "flex flex-col gap-4"
+            }>
             {filteredPlans.map(plan => (
               <Card key={plan.id} className={viewMode === "list" ? "flex flex-col md:flex-row" : ""}>
                 <div className="flex-1">
@@ -251,9 +238,10 @@ const Index = () => {
                 </CardFooter>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
 
-          {filteredPlans.length === 0 && (
+          {!loading && filteredPlans.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No se encontraron planes con los filtros seleccionados</p>
             </div>
