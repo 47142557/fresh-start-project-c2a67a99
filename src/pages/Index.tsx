@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Grid3x3, List, Plus, Minus } from "lucide-react";
-import { QuoteModal } from "@/components/QuoteModal";
-
+import FormQuote from "@/components/FormQuote";
 import { FloatingQuoteButton } from "@/components/FloatingQuoteButton";
 import { ComparisonBar } from "@/components/ComparisonBar";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface Attribute {
   name: string;
@@ -60,14 +60,9 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [formQuoteOpen, setFormQuoteOpen] = useState(false);
 
-  const [quoteModalOpen, setQuoteModalOpen] = useState(false);
   const [selectedClinicas, setSelectedClinicas] = useState<Clinica[]>([]);
   const [openClinicSearch, setOpenClinicSearch] = useState(false);
   const [comparisonPlans, setComparisonPlans] = useState<string[]>([]);
-
-    const toggleForm = () => {
-    setFormQuoteOpen(!formQuoteOpen);
-  };
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -158,8 +153,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-secondary/30">
-      <FloatingQuoteButton onClick={toggleForm} />
-      <QuoteModal open={quoteModalOpen} onOpenChange={setQuoteModalOpen} />
+      <FloatingQuoteButton onClick={() => setFormQuoteOpen(true)} />
+      
+      <Dialog open={formQuoteOpen} onOpenChange={setFormQuoteOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <FormQuote />
+        </DialogContent>
+      </Dialog>
+
       <ComparisonBar 
         plans={comparisonPlansList}
         onRemove={toggleComparison}
