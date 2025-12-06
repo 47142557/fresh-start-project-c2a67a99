@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Grid3x3, Plus, Heart, Shield, Users, Building2, Stethoscope, Baby } from "lucide-react";
-import { getHealthPlans, type HealthPlan, type Clinica } from "@/services/health.service";
+import { type HealthPlan, type Clinica } from "@/services/health.service";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/layouts/Layout";
 import FormQuote from "@/modules/salud/components/FormQuote";
@@ -25,14 +25,16 @@ const ResultadosPage = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Cotización hook for form persistence
+  // Cotización hook for form persistence and data fetching
   const {
     formData: cotizacionFormData,
     savedFormData,
     showRecoveryModal,
     setShowRecoveryModal,
     handleRecoverForm,
-    handleStartNew
+    handleStartNew,
+    cotizacionData,
+    isLoading
   } = useCotizacion();
   
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,8 +42,6 @@ const ResultadosPage = () => {
   const [priceRange, setPriceRange] = useState([0, 600]);
   const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [minRating, setMinRating] = useState([0]);
-  const [healthPlans, setHealthPlans] = useState<HealthPlan[]>([]);
-  const [loading, setLoading] = useState(true);
   const [formQuoteOpen, setFormQuoteOpen] = useState(false);
   const [sortBy, setSortBy] = useState<string>("default");
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
@@ -52,24 +52,9 @@ const ResultadosPage = () => {
   const [openClinicSearch, setOpenClinicSearch] = useState(false);
   const [comparisonPlans, setComparisonPlans] = useState<string[]>([]);
 
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const data = await getHealthPlans();
-        setHealthPlans(data);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "No se pudieron cargar los planes",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPlans();
-  }, [toast]);
+  // Use cotizacionData from hook instead of local state
+  const healthPlans = cotizacionData;
+  const loading = isLoading;
 
   const providers = Array.from(new Set(healthPlans.map(p => p.empresa)));
   
