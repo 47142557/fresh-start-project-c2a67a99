@@ -1,20 +1,9 @@
 import { X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { HealthPlan } from "@/core/interfaces/plan/planes";
 
-interface Image {
-  id: string;
-  descripcion: string;
-  empresa: string;
-  url: string;
-}
 
-interface HealthPlan {
-  _id: string;
-  name: string;
-  empresa: string;
-  images?: Image[];
-}
 
 interface ComparisonBarProps {
   plans: HealthPlan[];

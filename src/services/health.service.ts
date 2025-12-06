@@ -1,121 +1,83 @@
-import { environment } from '@/environments/environment';
 import { supabase } from '@/integrations/supabase/client';
+import { QuoteFormData, QuoteResponse } from '@/core/interfaces/plan/quoteFormData';
 
-// --- Interfaces ---
-export interface Ubicacion {
-  direccion: string;
-  telefono: string;
-  barrio: string;
-  partido: string;
-  region: string;
-  provincia: string;
-  CP: string;
-}
 
-export interface Clinica {
-  item_id: string;
-  nombre: string;
-  entity: string;
-  ubicacion?: Ubicacion[];
-}
-
-export interface Attribute {
-  name: string;
-  value_name: string;
-  attribute_group_name: string;
-  attribute_name_order?: number | null;
-  attribute_group_order?: number | null;
-}
-
-export interface Image {
-  id: string;
-  descripcion: string;
-  empresa: string;
-  url: string;
-}
-
-export interface HealthPlan {
-  _id: string;
-  name: string;
-  empresa: string;
-  price: number;
-  rating: number;
-  linea: string;
-  attributes?: Attribute[];
-  clinicas?: Clinica[];
-  images?: Image[];
-  folleto?: string[];
-}
-
-export interface QuoteFormData {
-  group: number | null;
-  edad_1: number;
-  edad_2: number;
-  numkids: number;
-  edadHijo1: number;
-  edadHijo2: number;
-  edadHijo3: number;
-  edadHijo4: number;
-  edadHijo5: number;
-  zone_type: string;
-  tipo: string;
-  sueldo: number;
-  aporteOS: number;
-  personalData: {
-    name: string;
-    email: string;
-    phone: string;
-    region: string;
-    medioContacto: string;
-  };
-}
-
-export interface QuoteResponse {
-  success: boolean;
-  data?: unknown;
-  error?: string;
-}
 
 // --- API Service Functions ---
 
 /**
  * Fetches all available health plans from the API
  */
-export const getHealthPlans = async (): Promise<HealthPlan[]> => {
-  const response = await fetch(`${environment.healthApiBaseUrl}/planes`);
+// export const getHealthPlans = async (): Promise<HealthPlan[]> => {
+//   const response = await fetch(`${environment.healthApiBaseUrl}/planes`);
   
-  if (!response.ok) {
-    throw new Error(`Error fetching health plans: ${response.statusText}`);
-  }
+//   if (!response.ok) {
+//     throw new Error(`Error fetching health plans: ${response.statusText}`);
+//   }
   
-  return response.json();
-};
+//   return response.json();
+// };
 
 /**
  * Submits a quote request through the Supabase edge function
  */
-export const submitQuote = async (formData: QuoteFormData): Promise<QuoteResponse> => {
-  const { data, error } = await supabase.functions.invoke('submit-quote', {
-    body: formData
-  });
+// Asegúrate de definir las interfaces QuoteResponse y QuoteFormData
+const API_MODE = import.meta.env.VITE_API_MODE;
+const LOCAL_API_URL = import.meta.env.VITE_LOCAL_API_URL;
+export const submitQuote = async (formData: QuoteFormData): Promise<QuoteResponse> => {  // En src/services/health.service.ts
+ if (API_MODE === 'local') {
+        try {
+            const response = await fetch(LOCAL_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
 
-  if (error) {
-    console.error('Error submitting quote:', error);
+            if (!response.ok) {
+                // Manejar errores HTTP (4xx, 5xx) del backend local
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Error HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+            return {
+                success: true,
+                data: data // Asume que la respuesta del backend local coincide con el tipo Planes
+            };
+
+        } catch (error) {
+            console.error('Error calling local backend:', error);
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Error desconocido al llamar al backend local'
+            };
+        }
+    }
+// --- Lógica para Entorno de Producción (Supabase Edge Function) ---
+    const { data, error } = await supabase.functions.invoke('submit-quote', {
+        body: formData
+    });
+
+    if (error) {
+        console.error('Error submitting quote to Supabase:', error);
+        return {
+            success: false,
+            error: error.message || 'Error al enviar la cotización a Supabase'
+        };
+    }
+    
+    // Asume que si no hay error, data es la respuesta exitosa
     return {
-      success: false,
-      error: error.message || 'Error al enviar la cotización'
+        success: true,
+        data: data
     };
-  }
-
-  return {
-    success: true,
-    data
-  };
 };
 
 // --- Health Service Object (Angular-like pattern) ---
 export const HealthService = {
-  getPlans: getHealthPlans,
+  // getPlans: getHealthPlans,
   submitQuote: submitQuote
 };
 

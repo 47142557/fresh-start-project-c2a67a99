@@ -2,7 +2,7 @@ import { Plus, Minus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { HealthPlan } from "@/services/health.service";
+import type { HealthPlan } from "@/core/interfaces/plan/planes";
 
 interface PlanCardProps {
   plan: HealthPlan;
@@ -63,7 +63,7 @@ export const PlanCard = ({
         <CardFooter className="flex flex-col gap-3 pt-3 border-t border-border/30">
           <div className="flex items-center justify-between w-full">
             <div>
-              <div className="text-2xl font-bold text-primary">${plan.price}</div>
+              <div className="text-2xl font-bold text-primary">${plan.precio}</div>
               <div className="text-[10px] text-muted-foreground">por mes</div>
             </div>
             <Button 

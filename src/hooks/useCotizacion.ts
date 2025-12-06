@@ -1,41 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { QuoteFormData } from '@/data/interfaces/quoteFormData';
-import { getHealthPlans, type HealthPlan } from '@/services/health.service';
+import { QuoteFormData } from '@/core/interfaces/plan/quoteFormData';
+import { submitQuote } from '@/services/health.service';
+import {  type HealthPlan } from '@/core/interfaces/plan/planes';
 
+import { initialFormData } from '@/data/initialFormData';
 const STORAGE_KEY = 'last_cotizacion_form';
 
-// Initial form state
-const initialFormData: QuoteFormData = {
-  _id: '',
-  group: null,
-  empresa_prepaga: 0,
-  edad_1: 18,
-  edad_2: 0,
-  numkids: 0,
-  zone_type: '',
-  edadHijo1: 0,
-  edadHijo2: 0,
-  edadHijo3: 0,
-  edadHijo4: 0,
-  edadHijo5: 0,
-  tipo: '',
-  agree: true,
-  aporteOS: 0,
-  sueldo: 0,
-  aporte: 0,
-  categoriaMono: '',
-  monoadic: 0,
-  cantAport: 0,
-  afinidad: false,
-  bonAfinidad: 0,
-  personalData: {
-    name: '',
-    email: '',
-    phone: '',
-    region: '',
-    medioContacto: ''
-  }
-};
+
 
 interface UseCotizacionReturn {
   formData: QuoteFormData;
@@ -73,28 +44,34 @@ export const useCotizacion = (): UseCotizacionReturn => {
   const shouldAutoFetch = useRef(true);
 
   // Fetch cotización from API
-  const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
+const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
     setIsLoading(true);
+    // Usar el formulario que se usó para la última cotización, o el actual si no se pasa nada
+    const formToSend = formDataToUse || formData;
     try {
       // In the future, pass formDataToUse to the API for personalized results
-      const data = await getHealthPlans();
-      setCotizacionData(data);
-      setHasFetched(true);
       
+      const result = await submitQuote(formToSend);
+      if (result.success && Array.isArray(result.data)) {
+            setCotizacionData(result.data as HealthPlan[]); 
+            setHasFetched(true);
       // Save the form data used for this fetch
-      if (formDataToUse) {
-        setFormDataState(formDataToUse);
-        if (formDataToUse.group !== null) {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(formDataToUse));
+      if (formToSend.group !== null) {
+                setFormDataState(formToSend);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(formToSend));
+            }
+      } else {
+            console.error('Error fetching cotización: Respuesta API inválida o fallida.', result.error);
+            // Opcional: Manejar el error de forma amigable al usuario
         }
-      }
     } catch (error) {
-      console.error('Error fetching cotización:', error);
-      throw error;
+        console.error('Error en fetchCotizacion:', error);
+        // Propagar el error para que sea manejado por un toast o alerta
+        throw error;
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
-  }, []);
+}, [formData]);
 
   // Check localStorage on mount
   useEffect(() => {

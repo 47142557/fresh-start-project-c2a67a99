@@ -1,7 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import type { HealthPlan } from "@/services/health.service";
+import type { HealthPlan } from "@/core/interfaces/plan/planes";
+
 
 interface PlanDetailsModalProps {
   open: boolean;
@@ -35,7 +36,7 @@ export const PlanDetailsModal = ({
         <Tabs defaultValue="info" className="flex-1 flex flex-col overflow-hidden mt-4">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="info">Información</TabsTrigger>
-            <TabsTrigger value="pdf" disabled={!plan.folleto?.[0]}>
+            <TabsTrigger value="pdf" disabled={!plan.folletos?.[0]}>
               PDF del Plan
             </TabsTrigger>
           </TabsList>
@@ -116,10 +117,10 @@ export const PlanDetailsModal = ({
           </TabsContent>
           
           <TabsContent value="pdf" className="flex-1 overflow-hidden mt-4">
-            {plan.folleto?.[0] ? (
+            {plan.folletos?.[0] ? (
               <div className="h-full w-full rounded-lg overflow-hidden border border-border">
                 <iframe
-                  src={plan.folleto[0]}
+                  src={plan.folletos[0]}
                   className="w-full h-full min-h-[600px]"
                   title={`PDF - ${plan.name}`}
                 />

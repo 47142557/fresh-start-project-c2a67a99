@@ -55,3 +55,9 @@ export interface QuoteRequest {
     medioContacto: string;
   };
 }
+
+export interface QuoteResponse {
+  success: boolean;
+  data?: unknown;
+  error?: string;
+}

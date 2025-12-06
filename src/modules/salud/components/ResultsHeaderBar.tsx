@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/u
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import type { Clinica } from "@/services/health.service";
+import type { Clinica } from "@/core/interfaces/plan/clinicas";
 
 interface ResultsHeaderBarProps {
   sortBy: string;

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Grid3x3, Plus, Heart, Shield, Users, Building2, Stethoscope, Baby } from "lucide-react";
-import { type HealthPlan, type Clinica } from "@/services/health.service";
+import { type HealthPlan } from "@/core/interfaces/plan/planes";
+import {  type Clinica  } from "@/core/interfaces/plan/clinicas";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/layouts/Layout";
 import FormQuote from "@/modules/salud/components/FormQuote";
@@ -71,7 +72,7 @@ const ResultadosPage = () => {
   }, []);
 
   const filteredPlans = healthPlans.filter(plan => {
-    const matchesPrice = plan.price >= priceRange[0] && plan.price <= priceRange[1];
+    const matchesPrice = plan.precio >= priceRange[0] && plan.precio <= priceRange[1];
     const matchesProvider = selectedProviders.length === 0 || selectedProviders.includes(plan.empresa);
     const matchesRating = plan.rating >= minRating[0];
     const matchesClinica = selectedClinicas.length === 0 || 
@@ -86,9 +87,9 @@ const ResultadosPage = () => {
   const sortedPlans = [...filteredPlans].sort((a, b) => {
     switch (sortBy) {
       case "price-asc":
-        return a.price - b.price;
+        return a.precio - b.precio;
       case "price-desc":
-        return b.price - a.price;
+        return b.precio - a.precio;
       case "name-asc":
         return a.empresa.localeCompare(b.empresa);
       default:

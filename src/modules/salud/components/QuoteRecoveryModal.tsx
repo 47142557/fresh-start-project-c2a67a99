@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Users, RefreshCw, Plus } from 'lucide-react';
-import { QuoteFormData } from '@/data/interfaces/quoteFormData';
+import { QuoteFormData } from '@/core/interfaces/plan/quoteFormData';
 import { getGroupDescription, getFamilySummary } from '@/hooks/useCotizacion';
 
 interface QuoteRecoveryModalProps {

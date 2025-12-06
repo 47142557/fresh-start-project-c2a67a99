@@ -1,7 +1,8 @@
 import { Search } from "lucide-react";
 import { PlanCard } from "./PlanCard";
 import { PlanCardSkeleton } from "./PlanCardSkeleton"; // <-- NUEVA IMPORTACIÓN
-import type { HealthPlan } from "@/services/health.service";
+import type { HealthPlan } from "@/core/interfaces/plan/planes";
+
 
 interface ResultsGridProps {
   plans: HealthPlan[];

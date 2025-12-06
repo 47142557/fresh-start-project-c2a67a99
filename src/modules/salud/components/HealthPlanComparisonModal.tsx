@@ -13,43 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { HealthPlan } from "@/core/interfaces/plan/planes";
+import { Clinica } from "@/core/interfaces/plan/clinicas";
 
-// --- INTERFACES ---
-interface Ubicacion {
-  direccion: string;
-  telefono: string;
-  barrio: string;
-  partido: string;
-  region: string;
-  provincia: string;
-  CP: string;
-}
 
-interface Clinica {
-  item_id: string;
-  nombre: string;
-  entity: string;
-  ubicacion?: Ubicacion[];
-}
 
-interface Attribute {
-  name: string;
-  value_name: string;
-  attribute_group_name: string;
-  attribute_name_order?: number | null;
-  attribute_group_order?: number | null;
-}
 
-interface HealthPlan {
-  _id: string;
-  name: string;
-  empresa: string;
-  price: number;
-  rating: number;
-  linea: string;
-  attributes?: Attribute[];
-  clinicas?: Clinica[];
-}
 
 interface HealthPlanComparisonModalProps {
   plansToCompare: HealthPlan[];
@@ -122,7 +91,7 @@ const PlanHeader = React.memo(({ plan, onRemovePlan }: { plan: HealthPlan; onRem
       </div>
     </div>
     <div className="text-xs text-muted-foreground">{plan.empresa}</div>
-    <div className="text-base font-bold text-green-600 mt-1">${plan.price}</div>
+    <div className="text-base font-bold text-green-600 mt-1">${plan.precio}</div>
   </div>
 ));
 
@@ -452,7 +421,7 @@ export const HealthPlanComparisonModal = ({
                     {plan.name}
                     <Badge variant="secondary">{plan.linea}</Badge>
                   </CardTitle>
-                  <CardDescription className="text-base font-semibold text-green-600">${plan.price}</CardDescription>
+                  <CardDescription className="text-base font-semibold text-green-600">${plan.precio}</CardDescription>
                   <CardDescription>{plan.empresa}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-2">

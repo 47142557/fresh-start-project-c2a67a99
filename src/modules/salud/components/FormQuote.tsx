@@ -2,7 +2,8 @@ import React, { useState, useCallback, useMemo, useEffect, useRef, SVGProps } fr
 import { JSX } from 'react/jsx-runtime';
 import { useToast } from '@/hooks/use-toast';
 import { submitQuote } from '@/services/health.service';
-import { QuoteFormData } from '@/data/interfaces/quoteFormData';
+import { QuoteFormData } from '@/core/interfaces/plan/quoteFormData';
+import { initialFormData } from '@/data/initialFormData';
 // Define the custom primary color for consistency with the Angular component's styling
 const PRIMARY_COLOR = '#4d72aa';
 const SECONDARY_COLOR = '#c4e2ff';
@@ -53,39 +54,6 @@ const MessageSquareIcon = (props: SVGProps<SVGSVGElement>) => (
     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
   </svg>
 );
-
-// Initial form state structure, mirroring the Angular form group.
-const initialFormData: QuoteFormData = {
-  _id: '',
-  group: null as number | null,
-  empresa_prepaga: 0,
-  edad_1: 18, // Titular
-  edad_2: 0, // Pareja
-  numkids: 0, // Cantidad de Hijos
-  zone_type: '',
-  edadHijo1: 0, // Max 5 kids supported
-  edadHijo2: 0,
-  edadHijo3: 0,
-  edadHijo4: 0,
-  edadHijo5: 0,
-  tipo: '', // D or P
-  agree: true,
-  aporteOS: 0,
-  sueldo: 0, // Sueldo Bruto
-  aporte: 0,
-  categoriaMono: '',
-  monoadic: 0,
-  cantAport: 0,
-  afinidad: false,
-  bonAfinidad: 0,
-  personalData: {
-    name: '',
-    email: '',
-    phone: '',
-    region: '',
-    medioContacto: ''
-  }
-};
 
 
 const FormQuote = () => {
