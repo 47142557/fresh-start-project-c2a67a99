@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { QuoteFormData } from '@/data/interfaces/quoteFormData';
+import { getHealthPlans, type HealthPlan } from '@/services/health.service';
 
 const STORAGE_KEY = 'last_cotizacion_form';
 
@@ -49,6 +50,11 @@ interface UseCotizacionReturn {
   clearStoredForm: () => void;
   isFormDirty: boolean;
   initialFormData: QuoteFormData;
+  // New properties for cotización state
+  cotizacionData: HealthPlan[];
+  isLoading: boolean;
+  fetchCotizacion: (formData?: QuoteFormData) => Promise<void>;
+  hasFetched: boolean;
 }
 
 export const useCotizacion = (): UseCotizacionReturn => {
@@ -57,6 +63,38 @@ export const useCotizacion = (): UseCotizacionReturn => {
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
   const [isFormDirty, setIsFormDirty] = useState(false);
   const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
+  
+  // New state for cotización data
+  const [cotizacionData, setCotizacionData] = useState<HealthPlan[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
+  
+  // Ref to track if we should auto-fetch
+  const shouldAutoFetch = useRef(true);
+
+  // Fetch cotización from API
+  const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
+    setIsLoading(true);
+    try {
+      // In the future, pass formDataToUse to the API for personalized results
+      const data = await getHealthPlans();
+      setCotizacionData(data);
+      setHasFetched(true);
+      
+      // Save the form data used for this fetch
+      if (formDataToUse) {
+        setFormDataState(formDataToUse);
+        if (formDataToUse.group !== null) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(formDataToUse));
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching cotización:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Check localStorage on mount
   useEffect(() => {
@@ -70,6 +108,7 @@ export const useCotizacion = (): UseCotizacionReturn => {
         if (parsedForm.group !== null && parsedForm.group !== undefined) {
           setSavedFormData(parsedForm);
           setShowRecoveryModal(true);
+          shouldAutoFetch.current = false; // Don't auto-fetch, wait for user decision
         }
       }
     } catch (error) {
@@ -78,6 +117,13 @@ export const useCotizacion = (): UseCotizacionReturn => {
     }
     setHasCheckedStorage(true);
   }, [hasCheckedStorage]);
+
+  // Auto-fetch on mount if no saved form
+  useEffect(() => {
+    if (hasCheckedStorage && shouldAutoFetch.current && !hasFetched && cotizacionData.length === 0) {
+      fetchCotizacion(initialFormData);
+    }
+  }, [hasCheckedStorage, hasFetched, cotizacionData.length, fetchCotizacion]);
 
   // Save form to localStorage
   const saveFormToStorage = useCallback((data: QuoteFormData) => {
@@ -118,20 +164,24 @@ export const useCotizacion = (): UseCotizacionReturn => {
     });
   }, [saveFormToStorage]);
 
-  // Recover saved form
+  // Recover saved form and fetch updated cotización
   const handleRecoverForm = useCallback(() => {
     if (savedFormData) {
       setFormDataState(savedFormData);
       setShowRecoveryModal(false);
+      // Fetch with recovered form data
+      fetchCotizacion(savedFormData);
     }
-  }, [savedFormData]);
+  }, [savedFormData, fetchCotizacion]);
 
-  // Start with new form
+  // Start with new form and fetch initial cotización
   const handleStartNew = useCallback(() => {
     clearStoredForm();
     setFormDataState(initialFormData);
     setShowRecoveryModal(false);
-  }, [clearStoredForm]);
+    // Fetch with initial form data
+    fetchCotizacion(initialFormData);
+  }, [clearStoredForm, fetchCotizacion]);
 
   return {
     formData,
@@ -145,7 +195,12 @@ export const useCotizacion = (): UseCotizacionReturn => {
     saveFormToStorage,
     clearStoredForm,
     isFormDirty,
-    initialFormData
+    initialFormData,
+    // New returns
+    cotizacionData,
+    isLoading,
+    fetchCotizacion,
+    hasFetched
   };
 };
 
