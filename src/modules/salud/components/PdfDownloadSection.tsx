@@ -113,78 +113,95 @@ export const PdfDownloadSection = ({
     return editedPrices[plan._id] ?? plan.precio;
   };
 
-  const handleDownloadPdf = async () => {
+const handleDownloadPdf = async () => {
     if (plans.length === 0) {
-      toast({
-        title: "Sin planes",
-        description: "No hay planes seleccionados para generar el PDF.",
-        variant: "destructive",
-      });
-      return;
+        toast({
+            title: "Sin planes",
+            description: "No hay planes seleccionados para generar el PDF.",
+            variant: "destructive",
+        });
+        return;
     }
 
     setIsGenerating(true);
 
     try {
-      // Generate HTML content
-      const htmlContent = generatePdfHtml({
-        plans,
-        selectedRegions,
-        selectedBarrios,
-        editedPrices,
-        groupedAttributes,
-      });
-
-      // Call edge function to convert to PDF
-      const { data, error } = await supabase.functions.invoke("generate-pdf", {
-        body: { htmlContent },
-      });
-
-      if (error) {
-        throw new Error(error.message || "Error al generar el PDF");
-      }
-
-      if (data?.pdfBase64) {
-        // Convert base64 to blob and download
-        const byteCharacters = atob(data.pdfBase64);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: "application/pdf" });
-
-        // Create download link
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `comparacion-planes-${new Date().toISOString().split("T")[0]}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        toast({
-          title: "PDF generado",
-          description: "El archivo se ha descargado correctamente.",
+        // 1. Generar HTML content
+        const htmlContent = generatePdfHtml({
+            plans,
+            selectedRegions,
+            selectedBarrios,
+            editedPrices,
+            groupedAttributes,
         });
-      } else {
-        throw new Error("No se recibió el PDF del servidor");
-      }
+
+        // 2. Obtener URL y Token para fetch nativo
+        // Asumiendo que VITE_SUPABASE_URL está correctamente definido en tu entorno
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        const functionUrl = `${SUPABASE_URL}/functions/v1/generate-pdf`;
+        
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        
+        // 3. ⚠️ INVOCACIÓN USANDO FETCH NATIVO (LA PARTE FALTANTE Y CORREGIDA)
+        const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token && { 'Authorization': `Bearer ${token}` }),
+                // Indica al servidor que quieres una respuesta binaria
+                'Accept': 'application/pdf', 
+            },
+            body: JSON.stringify({ htmlContent }),
+        });
+
+        if (!response.ok) {
+            // Manejar errores HTTP (4xx o 5xx)
+            const errorText = await response.text();
+            console.error("Error del Servidor HTTP:", response.status, errorText);
+            throw new Error(`Error ${response.status} al generar el PDF: ${errorText.substring(0, 50)}...`);
+        }
+
+        // 4. Leer el cuerpo de la respuesta como ArrayBuffer (datos binarios)
+        const pdfData = await response.arrayBuffer(); 
+        
+        // 5. Verificar y descargar
+        if (pdfData instanceof ArrayBuffer && pdfData.byteLength > 0) {
+            // 5a. Crear un Blob directamente desde el ArrayBuffer
+            const blob = new Blob([pdfData], { type: "application/pdf" });
+
+            // 5b. Crear y disparar la descarga
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `comparacion-planes-${new Date().toISOString().split("T")[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            toast({
+                title: "PDF generado",
+                description: "El archivo se ha descargado correctamente.",
+            });
+        } else {
+            // Si no es un ArrayBuffer, algo salió mal.
+            throw new Error("Respuesta del servidor no es un PDF binario válido.");
+        }
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error
-            ? error.message
-            : "No se pudo generar el PDF. Intente nuevamente.",
-        variant: "destructive",
-      });
+        console.error("Error generating PDF:", error);
+        toast({
+            title: "Error",
+            description:
+                error instanceof Error
+                    ? error.message
+                    : "No se pudo generar el PDF. Intente nuevamente.",
+            variant: "destructive",
+        });
     } finally {
-      setIsGenerating(false);
+        setIsGenerating(false);
     }
-  };
+};
 
   return (
     <Card className="mt-6 border-border">
