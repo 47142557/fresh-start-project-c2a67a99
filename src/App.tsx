@@ -10,6 +10,12 @@ import { ComparisonPage } from "./modules/salud/pages/ComparisonPage";
 import NotFound from "./modules/salud/pages/NotFound";
 import { LoginPage, RegisterPage, ForgotPasswordPage } from "./modules/auth/pages";
 import { StyleGuidePage } from "./modules/styleguide/pages";
+import {
+  VendorRegistrationPage,
+  VendorDashboardPage,
+  VendorProfilePage,
+  VendorQuotesPage,
+} from "./modules/vendor/pages";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +34,11 @@ const App = () => (
             <Route path="/auth/login" element={<LoginPage />} />
             <Route path="/auth/register" element={<RegisterPage />} />
             <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+            {/* Vendor routes */}
+            <Route path="/vendedor/registro" element={<VendorRegistrationPage />} />
+            <Route path="/vendedor/dashboard" element={<VendorDashboardPage />} />
+            <Route path="/vendedor/perfil" element={<VendorProfilePage />} />
+            <Route path="/vendedor/cotizaciones" element={<VendorQuotesPage />} />
             {/* Styleguide */}
             <Route path="/styleguide" element={<StyleGuidePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
