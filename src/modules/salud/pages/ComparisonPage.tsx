@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { X, Plus, Search, Check, Trash2, Star, ArrowLeft } from "lucide-react";
+import { X, Plus, Search, Check, Trash2, Star, ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/layouts/Layout";
@@ -9,8 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollableTabs } from "@/modules/salud/components/ScrollableTabs";
+import { PdfDownloadSection } from "@/modules/salud/components/PdfDownloadSection";
 import { HealthPlan } from "@/core/interfaces/plan/planes";
 import { Clinica } from "@/core/interfaces/plan/clinicas";
 
@@ -22,24 +24,11 @@ interface ComparisonPageProps {
   onRemovePlan?: (planId: string) => void;
 }
 
-// --- CONSTANTS ---
-const ATTRIBUTE_GROUPS = [
-  "Cobertura Ambulatoria",
-  "Internación y Cirugías",
-  "Odontología y Óptica",
-  "Reintegros y Servicios"
-];
-
-// Estilos para la tabla sticky con scroll horizontal - sin altura fija
+// Estilos para la tabla sticky con scroll horizontal - condensados
 const ComparisonStyles = `
   .tabs-content-container {
-<<<<<<< HEAD
     min-height: 400px;
     overflow: visible;
-=======
-    height: 55vh;
-    overflow: hidden;
->>>>>>> 5dd1a9d9d6f5852394b99a18533bd5f3fd4ea15b
     display: flex;
     flex-direction: column;
   }
@@ -53,48 +42,51 @@ const ComparisonStyles = `
     left: 0;
     z-index: 15;
     background-color: hsl(var(--background));
-    box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+    box-shadow: 2px 0 8px rgba(0,0,0,0.08);
   }
   .sticky-header th {
     position: sticky;
     top: 0;
     z-index: 20;
     background-color: hsl(var(--background));
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
     padding: 0; 
   }
   .corner-cell {
     z-index: 25 !important;
     background-color: hsl(var(--muted)) !important;
   }
-  .comparison-tabs-list {
-    padding: 0.75rem 1rem;
+  /* Condensed table styles */
+  .condensed-table td, .condensed-table th {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.75rem;
   }
-  .comparison-tabs-list [data-state="active"] {
-    font-weight: 600;
+  .condensed-table .group-row td {
+    padding: 0.5rem;
+    font-size: 0.8125rem;
   }
 `;
 
 // --- COMPONENTS ---
-const PlanHeader = React.memo(({ plan, onRemovePlan }: { plan: HealthPlan; onRemovePlan: (planId: string) => void }) => (
-  <div className="relative flex flex-col items-center justify-center p-3 h-full border-b border-border bg-muted/30">
+const PlanHeader = React.memo(({ plan, onRemovePlan, compact = false }: { plan: HealthPlan; onRemovePlan: (planId: string) => void; compact?: boolean }) => (
+  <div className={`relative flex flex-col items-center justify-center ${compact ? 'p-2' : 'p-3'} h-full border-b border-border bg-muted/30`}>
     <Button 
       variant="ghost" 
       size="icon"
       onClick={() => onRemovePlan(plan._id)}
-      className="absolute top-2 right-2 h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10"
+      className="absolute top-1 right-1 h-5 w-5 text-destructive hover:text-destructive hover:bg-destructive/10"
     >
-      <Trash2 className="w-4 h-4" />
+      <Trash2 className="w-3 h-3" />
     </Button>
-    <div className="flex items-center gap-2 mb-1">
-      <div className="text-lg font-extrabold text-primary truncate max-w-full">{plan.name}</div>
-      <div className="flex items-center text-yellow-500 text-sm shrink-0">
-        <Star className="w-4 h-4 fill-yellow-500" />
-        <span className="ml-1">{plan.rating}</span>
+    <div className="flex items-center gap-1.5 mb-0.5">
+      <div className={`${compact ? 'text-sm' : 'text-base'} font-bold text-primary truncate max-w-full`}>{plan.name}</div>
+      <div className="flex items-center text-yellow-500 text-xs shrink-0">
+        <Star className="w-3 h-3 fill-yellow-500" />
+        <span className="ml-0.5">{plan.rating}</span>
       </div>
     </div>
     <div className="text-xs text-muted-foreground">{plan.empresa}</div>
-    <div className="text-base font-bold text-green-600 mt-1">${plan.precio}</div>
+    <div className={`${compact ? 'text-sm' : 'text-base'} font-bold text-success mt-0.5`}>${plan.precio?.toLocaleString('es-AR')}</div>
   </div>
 ));
 
@@ -112,6 +104,7 @@ export const ComparisonPage = ({
   const [activeTab, setActiveTab] = useState("beneficios"); 
   const [activeClinicaTab, setActiveClinicaTab] = useState("todas"); 
   const [searchTerm, setSearchTerm] = useState("");
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   
   // Internal state management
   const [internalPlansToCompare, setInternalPlansToCompare] = useState<HealthPlan[]>([]);
@@ -132,13 +125,10 @@ export const ComparisonPage = ({
       const storedComparisonPlans = sessionStorage.getItem('comparisonPlans');
       const storedAllPlans = sessionStorage.getItem('allPlans');
       
-      console.log('Loading from sessionStorage:', { storedComparisonPlans, storedAllPlans });
-      
       if (storedComparisonPlans && storedAllPlans) {
         try {
           const parsedComparisonPlans = JSON.parse(storedComparisonPlans);
           const parsedAllPlans = JSON.parse(storedAllPlans);
-          console.log('Parsed data:', { parsedComparisonPlans, parsedAllPlans });
           setInternalPlansToCompare(parsedComparisonPlans);
           setInternalAllPlans(parsedAllPlans);
         } catch (error) {
@@ -151,7 +141,6 @@ export const ComparisonPage = ({
           navigate('/');
         }
       } else {
-        console.log('No data in sessionStorage, redirecting to home');
         navigate('/');
       }
     }
@@ -184,6 +173,18 @@ export const ComparisonPage = ({
   
   const onAddPlan = propOnAddPlan || handleAddPlan;
   const onRemovePlan = propOnRemovePlan || handleRemovePlan;
+
+  const toggleGroupCollapse = (groupName: string) => {
+    setCollapsedGroups(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupName)) {
+        newSet.delete(groupName);
+      } else {
+        newSet.add(groupName);
+      }
+      return newSet;
+    });
+  };
   
   // --- DATA LOGIC ---
   const plansToAdd = useMemo(() => {
@@ -306,50 +307,72 @@ export const ComparisonPage = ({
         <style dangerouslySetInnerHTML={{ __html: ComparisonStyles }} />
         
         <div className="comparison-scroll-container">
-          <table className="min-w-full table-fixed divide-y divide-border">
+          <table className="min-w-full table-fixed divide-y divide-border condensed-table">
             <thead className="sticky-header">
               <tr>
-                <th scope="col" className="w-48 px-4 py-3 sticky-col corner-cell text-left text-xs font-semibold uppercase">
-                  Beneficio / Atributo
+                <th scope="col" className="w-44 px-3 py-2 sticky-col corner-cell text-left text-xs font-semibold uppercase">
+                  Beneficio
                 </th>
                 {plansToCompare.map(plan => (
-                  <th key={plan._id} scope="col" className="min-w-[250px] border-l border-border">
-                    <PlanHeader plan={plan} onRemovePlan={onRemovePlan} />
+                  <th key={plan._id} scope="col" className="min-w-[200px] border-l border-border">
+                    <PlanHeader plan={plan} onRemovePlan={onRemovePlan} compact />
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody className="bg-background">
-              {Object.entries(groupedAttributes).map(([groupName, attrNames]) => (
-                <React.Fragment key={groupName}>
-                  <tr className="bg-primary/10 border-t-2 border-t-primary">
-                    <td 
-                      colSpan={plansToCompare.length + 1} 
-                      className="px-6 py-4 font-bold text-lg text-primary text-center uppercase tracking-wide"
+              {Object.entries(groupedAttributes).map(([groupName, attrNames]) => {
+                const isCollapsed = collapsedGroups.has(groupName);
+                
+                return (
+                  <React.Fragment key={groupName}>
+                    {/* Group header - clickable to collapse */}
+                    <tr 
+                      className="bg-primary/10 border-t border-t-primary/30 cursor-pointer hover:bg-primary/15 transition-colors group-row"
+                      onClick={() => toggleGroupCollapse(groupName)}
                     >
-                      {groupName}
-                    </td>
-                  </tr>
-                  
-                  {attrNames.map((attrName, index) => (
-                    <tr key={attrName} className={index % 2 === 0 ? 'bg-background border-b border-border' : 'bg-muted/20 border-b border-border'}>
-                      <th scope="row" className="px-4 py-3 font-medium sticky-col text-left text-sm">
-                        {attrName}
-                      </th>
-                      {plansToCompare.map(plan => {
-                        const value = getPlanAttributeValue(plan, attrName);
-                        return (
-                          <td key={`${plan._id}-${attrName}`} className="w-64 px-4 py-3 text-center border-l border-border">
-                            <Badge variant={value === 'N/A' || value === 'No' ? 'secondary' : 'default'}>
-                              {value}
-                            </Badge>
-                          </td>
-                        );
-                      })}
+                      <td 
+                        colSpan={plansToCompare.length + 1} 
+                        className="px-3 py-2 font-semibold text-sm text-primary"
+                      >
+                        <div className="flex items-center gap-2">
+                          {isCollapsed ? (
+                            <ChevronRight className="w-4 h-4" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
+                          <span className="uppercase tracking-wide">{groupName}</span>
+                          <Badge variant="secondary" className="text-xs ml-2">
+                            {attrNames.length}
+                          </Badge>
+                        </div>
+                      </td>
                     </tr>
-                  ))}
-                </React.Fragment>
-              ))}
+                    
+                    {/* Attributes - hidden when collapsed */}
+                    {!isCollapsed && attrNames.map((attrName, index) => (
+                      <tr key={attrName} className={index % 2 === 0 ? 'bg-background border-b border-border' : 'bg-muted/20 border-b border-border'}>
+                        <th scope="row" className="px-3 py-1.5 font-medium sticky-col text-left text-xs">
+                          {attrName}
+                        </th>
+                        {plansToCompare.map(plan => {
+                          const value = getPlanAttributeValue(plan, attrName);
+                          return (
+                            <td key={`${plan._id}-${attrName}`} className="px-3 py-1.5 text-center border-l border-border">
+                              <Badge 
+                                variant={value === 'N/A' || value === 'No' ? 'secondary' : 'default'}
+                                className="text-xs font-normal"
+                              >
+                                {value}
+                              </Badge>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -377,15 +400,15 @@ export const ComparisonPage = ({
 
     return (
       <div className="comparison-scroll-container">
-        <table className="min-w-full table-fixed divide-y divide-border">
+        <table className="min-w-full table-fixed divide-y divide-border condensed-table">
           <thead className="sticky-header">
             <tr>
-              <th scope="col" className="w-[400px] px-4 py-3 sticky-col corner-cell text-left text-xs font-semibold uppercase">
+              <th scope="col" className="w-[350px] px-3 py-2 sticky-col corner-cell text-left text-xs font-semibold uppercase">
                 Clínica
               </th>
               {plansToCompare.map(plan => (
-                <th key={plan._id} scope="col" className="w-[150px] border-l border-border">
-                  <PlanHeader plan={plan} onRemovePlan={onRemovePlan} />
+                <th key={plan._id} scope="col" className="w-[120px] border-l border-border">
+                  <PlanHeader plan={plan} onRemovePlan={onRemovePlan} compact />
                 </th>
               ))}
             </tr>
@@ -396,9 +419,9 @@ export const ComparisonPage = ({
                 key={clinica.item_id}
                 className={idx % 2 === 0 ? "bg-background border-b border-border" : "bg-muted/20 border-b border-border"}
               >
-                <th scope="row" className="px-4 py-3 sticky-col text-left">
+                <th scope="row" className="px-3 py-1.5 sticky-col text-left">
                   <div>
-                    <p className="font-medium text-sm">{clinica.entity}</p>
+                    <p className="font-medium text-xs">{clinica.entity}</p>
                     {clinica.ubicacion?.[0] && (
                       <p className="text-xs text-muted-foreground">
                         {clinica.ubicacion[0].barrio} - {clinica.ubicacion[0].region}
@@ -409,12 +432,12 @@ export const ComparisonPage = ({
                 {plansToCompare.map(plan => (
                   <td 
                     key={`${plan._id}-${clinica.item_id}`}
-                    className="px-4 py-3 text-center border-l border-border"
+                    className="px-3 py-1.5 text-center border-l border-border"
                   >
                     {planIncludesClinica(plan, clinica.item_id) ? (
-                      <Check className="h-5 w-5 text-green-600 mx-auto" />
+                      <Check className="h-4 w-4 text-success mx-auto" />
                     ) : (
-                      <X className="h-5 w-5 text-red-600 mx-auto" />
+                      <X className="h-4 w-4 text-destructive mx-auto" />
                     )}
                   </td>
                 ))}
@@ -443,12 +466,12 @@ export const ComparisonPage = ({
         >
           <div className="px-4 pt-4 border-b bg-background max-w-full">
             <ScrollableTabs className="pb-2">
-              <TabsList className="inline-flex h-10 items-center justify-start gap-1 bg-muted p-1 w-auto">
-                <TabsTrigger value="todas" className="shrink-0">
+              <TabsList className="inline-flex h-9 items-center justify-start gap-1 bg-muted p-1 w-auto">
+                <TabsTrigger value="todas" className="shrink-0 text-xs px-3">
                   Todas ({uniqueClinicas.length})
                 </TabsTrigger>
                 {regions.map(region => (
-                  <TabsTrigger key={region} value={region} className="shrink-0">
+                  <TabsTrigger key={region} value={region} className="shrink-0 text-xs px-3">
                     {region} ({getClinicasByRegion(region).length})
                   </TabsTrigger>
                 ))}
@@ -485,26 +508,27 @@ export const ComparisonPage = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
             {plansToAdd.map(plan => (
               <Card key={plan._id}>
-                <CardHeader>
-                  <CardTitle className="flex justify-between items-start text-base">
+                <CardHeader className="pb-2">
+                  <CardTitle className="flex justify-between items-start text-sm">
                     {plan.name}
-                    <Badge variant="secondary">{plan.linea}</Badge>
+                    <Badge variant="secondary" className="text-xs">{plan.linea}</Badge>
                   </CardTitle>
-                  <CardDescription className="text-base font-semibold text-green-600">${plan.precio}</CardDescription>
-                  <CardDescription>{plan.empresa}</CardDescription>
+                  <CardDescription className="text-sm font-semibold text-success">${plan.precio?.toLocaleString('es-AR')}</CardDescription>
+                  <CardDescription className="text-xs">{plan.empresa}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-2">
                   <ul className="text-xs text-muted-foreground space-y-1 mb-3">
-                    <li><Check className="w-3 h-3 inline mr-1 text-green-500" /> Cobertura Ambulatoria Básica</li>
-                    <li><Check className="w-3 h-3 inline mr-1 text-green-500" /> {plan.clinicas?.length || 0} Clínicas en Cartilla</li>
+                    <li><Check className="w-3 h-3 inline mr-1 text-success" /> Cobertura Ambulatoria Básica</li>
+                    <li><Check className="w-3 h-3 inline mr-1 text-success" /> {plan.clinicas?.length || 0} Clínicas en Cartilla</li>
                   </ul>
                   <Button 
                     onClick={() => onAddPlan(plan._id)} 
                     className="w-full"
+                    size="sm"
                     disabled={plansToCompare.length >= 4}
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    Añadir a Comparación
+                    Añadir
                   </Button>
                   {plansToCompare.length >= 4 && (
                     <p className="text-xs text-center text-destructive mt-2">Máximo 4 planes</p>
@@ -565,15 +589,15 @@ export const ComparisonPage = ({
       <div className="flex-1 bg-background">
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-4">
           <Tabs defaultValue="beneficios" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="w-full justify-start bg-muted/30 p-1 rounded-xl h-12 sm:h-14">
-              <TabsTrigger value="beneficios" className="rounded-lg text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3">
+            <TabsList className="w-full justify-start bg-muted/30 p-1 rounded-xl h-11">
+              <TabsTrigger value="beneficios" className="rounded-lg text-sm px-4 py-2">
                 Beneficios
               </TabsTrigger>
-              <TabsTrigger value="clinicas" className="rounded-lg text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3">
+              <TabsTrigger value="clinicas" className="rounded-lg text-sm px-4 py-2">
                 Clínicas
               </TabsTrigger>
-              <TabsTrigger value="add" className="rounded-lg flex items-center gap-1 sm:gap-2 text-sm sm:text-base px-3 sm:px-6 py-2 sm:py-3">
-                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <TabsTrigger value="add" className="rounded-lg flex items-center gap-1.5 text-sm px-4 py-2">
+                <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Añadir</span>
               </TabsTrigger>
             </TabsList>
@@ -594,6 +618,13 @@ export const ComparisonPage = ({
               {renderAddPlanTab()}
             </TabsContent>
           </Tabs>
+
+          {/* PDF Download Section */}
+          <PdfDownloadSection 
+            plans={plansToCompare}
+            groupedAttributes={groupedAttributes}
+            canEditPrices={false} // Set to true for users who can edit prices
+          />
         </div>
       </div>
     </Layout>
