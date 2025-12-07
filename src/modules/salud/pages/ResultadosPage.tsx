@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Grid3x3, Plus, Heart, Shield, Users, Building2, Stethoscope, Baby } from "lucide-react";
 import { type HealthPlan } from "@/core/interfaces/plan/planes";
@@ -19,6 +19,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 // Interfaces are now imported from health.service.ts
 
@@ -68,7 +70,8 @@ const minPrice = numericPrices.length > 0 ? Math.floor(Math.min(...numericPrices
 // -----------------------------------------------------------------
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [priceRange, setPriceRange] = useState([minPrice, maxPrice]);  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<number[]>([0, 10000000]);
+  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [minRating, setMinRating] = useState([0]);
   const [formQuoteOpen, setFormQuoteOpen] = useState(false);
   const [sortBy, setSortBy] = useState<string>("default");
@@ -79,6 +82,22 @@ const minPrice = numericPrices.length > 0 ? Math.floor(Math.min(...numericPrices
   const [selectedClinicas, setSelectedClinicas] = useState<Clinica[]>([]);
   const [openClinicSearch, setOpenClinicSearch] = useState(false);
   const [comparisonPlans, setComparisonPlans] = useState<string[]>([]);
+
+  // Hero carousel phrases
+  const heroSlides = [
+    { title: "Encontrá el plan perfecto para vos", subtitle: "Compará planes de las mejores prepagas" },
+    { title: "Filtrá por precio y cobertura", subtitle: "Ajustá el rango de precios a tu presupuesto" },
+    { title: "Buscá por clínica", subtitle: "Encontrá planes que incluyan tu clínica favorita" },
+    { title: "Compará hasta 4 planes", subtitle: "Analizá beneficios lado a lado" },
+    { title: "Cotización sin compromiso", subtitle: "Recibí asesoramiento personalizado" },
+  ];
+
+  // Update price range when data loads
+  useEffect(() => {
+    if (minPrice > 0 || maxPrice < 10000000) {
+      setPriceRange([minPrice, maxPrice]);
+    }
+  }, [minPrice, maxPrice]);
 
  
   const providers = Array.from(new Set(healthPlans.map(p => p.empresa)));
@@ -204,20 +223,30 @@ const minPrice = numericPrices.length > 0 ? Math.floor(Math.min(...numericPrices
         isComparisonModalOpen={false}
       />
       
-      {/* Compact Hero Banner - E-commerce Style */}
+      {/* Hero Carousel Banner */}
       <div className="relative bg-gradient-to-r from-primary via-primary/90 to-secondary overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
         <div className="container mx-auto px-4 py-6 lg:py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-center md:text-left">
-              <h1 className="text-2xl lg:text-3xl font-bold text-primary-foreground">
-                Encontrá el plan perfecto para vos
-              </h1>
-              <p className="text-primary-foreground/80 text-sm mt-1">
-                Compará {healthPlans.length} planes de {providers.length} prepagas
-              </p>
-            </div>
-            <div className="flex gap-2">
+            <Carousel
+              opts={{ align: "start", loop: true }}
+              plugins={[Autoplay({ delay: 4000, stopOnInteraction: false })]}
+              className="flex-1 text-center md:text-left"
+            >
+              <CarouselContent>
+                {heroSlides.map((slide, index) => (
+                  <CarouselItem key={index}>
+                    <h1 className="text-2xl lg:text-3xl font-bold text-primary-foreground">
+                      {slide.title}
+                    </h1>
+                    <p className="text-primary-foreground/80 text-sm mt-1">
+                      {slide.subtitle}
+                    </p>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+            <div className="flex gap-2 shrink-0">
               <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/30">
                 {healthPlans.length} planes
               </Badge>
