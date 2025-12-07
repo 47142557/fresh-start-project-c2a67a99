@@ -50,14 +50,16 @@ const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
     try {
         const result = await submitQuote(formToSend);
         
-        // --- CORRECTED LOGIC START ---
-        if (result.success && Array.isArray(result.data)) {
+        // Extract the plans array from the nested response structure
+        // Response structure: { success: true, data: { data: [...plans], message, success } }
+        const plansArray = result.data?.data;
+        
+        if (result.success && Array.isArray(plansArray)) {
             // SUCCESS: Handle data and state updates
-            setCotizacionData(result.data as HealthPlan[]);
+            setCotizacionData(plansArray as HealthPlan[]);
             setHasFetched(true);
             
-            // Log for successful data fetch (optional, use console.log)
-            // console.log('Cotización fetched successfully:', result.data); 
+            console.log('✅ Cotización fetched successfully:', plansArray.length, 'planes');
 
             // Save the form data used for this fetch
             if (formToSend.group !== null) {
@@ -67,9 +69,7 @@ const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
         } else {
             // FAILURE: Handle API response error
             console.error('Error fetching cotización: Respuesta API inválida o fallida.', result.error);
-            // Optional: Show a user-friendly error (e.g., toast or alert)
         }
-        // --- CORRECTED LOGIC END ---
 
     } catch (error) {
         // CATCH: Handle network or service exception

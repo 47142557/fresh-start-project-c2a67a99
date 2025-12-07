@@ -56,8 +56,14 @@ export interface QuoteRequest {
   };
 }
 
+export interface QuoteResponseData {
+  data: unknown[];
+  message?: string;
+  success?: boolean;
+}
+
 export interface QuoteResponse {
   success: boolean;
-  data?: unknown;
+  data?: QuoteResponseData;
   error?: string;
 }
