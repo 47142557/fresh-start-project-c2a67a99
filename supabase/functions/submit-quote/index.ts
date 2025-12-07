@@ -51,14 +51,8 @@ Deno.serve(async (req: { method: string; json: () => QuoteRequest | PromiseLike<
     const quoteData: QuoteRequest = await req.json();
     console.log('Submit Quote - Datos recibidos:', JSON.stringify(quoteData, null, 2));
 
-    // Validar datos requeridos
-    if (!quoteData.personalData?.name || !quoteData.personalData?.email || !quoteData.personalData?.phone) {
-      console.error('Submit Quote - Faltan datos personales requeridos');
-      return new Response(
-        JSON.stringify({ error: 'Faltan datos personales requeridos' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // Nota: personalData es opcional para cotizaciones de precios
+    // Solo es requerido cuando el usuario completa el formulario de contacto
 
     // Preparar datos para enviar al endpoint externo
     const externalPayload = {
