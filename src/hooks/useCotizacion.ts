@@ -46,33 +46,39 @@ export const useCotizacion = (): UseCotizacionReturn => {
   // Fetch cotización from API
 const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
     setIsLoading(true);
-    // Usar el formulario que se usó para la última cotización, o el actual si no se pasa nada
     const formToSend = formDataToUse || formData;
     try {
-      // In the future, pass formDataToUse to the API for personalized results
-      
-      const result = await submitQuote(formToSend);
-      if (result.success && Array.isArray(result.data)) {
-            setCotizacionData(result.data as HealthPlan[]); 
+        const result = await submitQuote(formToSend);
+        
+        // --- CORRECTED LOGIC START ---
+        if (result.success && Array.isArray(result.data)) {
+            // SUCCESS: Handle data and state updates
+            setCotizacionData(result.data as HealthPlan[]);
             setHasFetched(true);
-      // Save the form data used for this fetch
-      if (formToSend.group !== null) {
+            
+            // Log for successful data fetch (optional, use console.log)
+            // console.log('Cotización fetched successfully:', result.data); 
+
+            // Save the form data used for this fetch
+            if (formToSend.group !== null) {
                 setFormDataState(formToSend);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(formToSend));
             }
-      } else {
+        } else {
+            // FAILURE: Handle API response error
             console.error('Error fetching cotización: Respuesta API inválida o fallida.', result.error);
-            // Opcional: Manejar el error de forma amigable al usuario
+            // Optional: Show a user-friendly error (e.g., toast or alert)
         }
+        // --- CORRECTED LOGIC END ---
+
     } catch (error) {
-        console.error('Error en fetchCotizacion:', error);
-        // Propagar el error para que sea manejado por un toast o alerta
+        // CATCH: Handle network or service exception
+        console.error('Error en fetchCotizacion (Network or API Exception):', error);
         throw error;
     } finally {
         setIsLoading(false);
     }
-}, [formData]);
-
+}, [formData]); // Dependencies remain the same
   // Check localStorage on mount
   useEffect(() => {
     if (hasCheckedStorage) return;

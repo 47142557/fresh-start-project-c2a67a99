@@ -12,6 +12,9 @@ interface ResultsFilterSidebarProps {
   minRating: number[];
   onMinRatingChange: (value: number[]) => void;
   onClearFilters: () => void;
+  // 🔥 NUEVOS LÍMITES
+  minLimit: number; // El precio mínimo real
+  maxLimit: number; // El precio máximo real
 }
 
 export const ResultsFilterSidebar = ({
@@ -23,6 +26,9 @@ export const ResultsFilterSidebar = ({
   minRating,
   onMinRatingChange,
   onClearFilters,
+  // Desestructura minLimit y maxLimit aquí
+  minLimit, 
+  maxLimit,
 }: ResultsFilterSidebarProps) => {
   return (
     <div className="space-y-6">
@@ -32,12 +38,14 @@ export const ResultsFilterSidebar = ({
       <div>
         <Label className="text-sm font-medium mb-3 block">Rango de Precio</Label>
         <Slider
-          min={0}
-          max={600}
-          step={10}
-          value={priceRange}
-          onValueChange={onPriceRangeChange}
-          className="mb-2"
+// 🔥 USAR LAS PROPS DINÁMICAS
+          min={minLimit} // Antes era 0
+          max={maxLimit} // Antes era 600
+      // 🔥 FIN USO DINÁMICO
+      step={10000} // Sugiero un paso más grande ya que los precios son altos
+      value={priceRange}
+      onValueChange={onPriceRangeChange}
+      className="mb-2"
         />
         <div className="flex justify-between text-sm text-muted-foreground">
           <span>${priceRange[0]}</span>

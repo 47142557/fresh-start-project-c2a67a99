@@ -50,13 +50,16 @@ export const PlanCard = ({
           <p className="text-xs font-medium text-muted-foreground mb-3 bg-muted/30 px-2 py-1 rounded inline-block">{plan.linea}</p>
           <ul className="space-y-2">
             {plan.attributes?.slice(0, 3).map((attr, idx) => (
+              
               <li key={`${plan._id}-attr-${idx}`} className="text-xs flex items-start gap-2">
+                
                 <span className="text-primary mt-0.5 flex-shrink-0">✓</span>
                 <span className="flex-1">
                   <span className="font-semibold text-foreground">{attr.name}:</span>{" "}
                   <span className="text-muted-foreground">{attr.value_name}</span>
                 </span>
               </li>
+              
             ))}
           </ul>
         </CardContent>

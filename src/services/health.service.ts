@@ -42,6 +42,10 @@ export const submitQuote = async (formData: QuoteFormData): Promise<QuoteRespons
             }
 
             const data = await response.json();
+
+            // 🔥 CONSOLE.LOG PARA EL MODO LOCAL
+            console.log('✅ Resultado de la API Local:', data);
+
             return {
                 success: true,
                 data: data // Asume que la respuesta del backend local coincide con el tipo Planes
@@ -68,6 +72,8 @@ export const submitQuote = async (formData: QuoteFormData): Promise<QuoteRespons
         };
     }
     
+    // 🔥 CONSOLE.LOG PARA SUPABASE (PRODUCCIÓN)
+    console.log('✅ Resultado de Supabase:', data);
     // Asume que si no hay error, data es la respuesta exitosa
     return {
         success: true,

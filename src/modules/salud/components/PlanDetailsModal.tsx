@@ -56,7 +56,7 @@ export const PlanDetailsModal = ({
             {/* Precio y Rating */}
             <div className="flex items-center justify-between p-6 bg-muted/30 rounded-lg">
               <div>
-                <div className="text-3xl font-bold text-primary">${plan.price}</div>
+                <div className="text-3xl font-bold text-primary">${plan.precio}</div>
                 <div className="text-sm text-muted-foreground">por mes</div>
               </div>
               <div className="flex items-center gap-2 bg-accent px-4 py-2 rounded-lg">

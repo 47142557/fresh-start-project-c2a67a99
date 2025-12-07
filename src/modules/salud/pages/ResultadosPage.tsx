@@ -37,11 +37,38 @@ const ResultadosPage = () => {
     cotizacionData,
     isLoading
   } = useCotizacion();
-  
+
+
+  // 🔥 INICIO: Bloque de depuración
+useEffect(() => {
+    if (cotizacionData.length > 0) {
+        console.log('✅ Datos de Cotización recibidos en ResultadosPage:', cotizacionData);
+        console.log(`Número total de planes: ${cotizacionData.length}`);
+    } else if (!isLoading) {
+         // Se ejecuta si no hay datos y ya terminó de cargar
+         console.warn('⚠️ No se recibieron planes de salud, o la lista está vacía.');
+    }
+}, [cotizacionData, isLoading]);
+// FIN: Bloque de depuración
+ // Use cotizacionData from hook instead of local state
+  const healthPlans = cotizacionData;
+  const loading = isLoading;
+// 1. Limpiamos y convertimos todos los precios a números válidos
+const numericPrices = healthPlans
+    // Filtramos solo los planes que tienen un precio válido
+    .filter(plan => plan.precio !== null && plan.precio !== undefined)
+    // Convertimos la propiedad 'precio' a número
+    .map(plan => Number(plan.precio))
+    // Nos aseguramos de que no incluya valores NaN (Not a Number)
+    .filter(price => !isNaN(price) && price >= 0); 
+
+// 2. Calculamos los extremos
+const maxPrice = numericPrices.length > 0 ? Math.ceil(Math.max(...numericPrices) / 1000) * 1000 : 10000000;
+const minPrice = numericPrices.length > 0 ? Math.floor(Math.min(...numericPrices) / 1000) * 1000 : 0;
+// -----------------------------------------------------------------
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [priceRange, setPriceRange] = useState([0, 600]);
-  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState([minPrice, maxPrice]);  const [selectedProviders, setSelectedProviders] = useState<string[]>([]);
   const [minRating, setMinRating] = useState([0]);
   const [formQuoteOpen, setFormQuoteOpen] = useState(false);
   const [sortBy, setSortBy] = useState<string>("default");
@@ -53,10 +80,7 @@ const ResultadosPage = () => {
   const [openClinicSearch, setOpenClinicSearch] = useState(false);
   const [comparisonPlans, setComparisonPlans] = useState<string[]>([]);
 
-  // Use cotizacionData from hook instead of local state
-  const healthPlans = cotizacionData;
-  const loading = isLoading;
-
+ 
   const providers = Array.from(new Set(healthPlans.map(p => p.empresa)));
   
   // Extract all unique clinics from all plans
@@ -72,6 +96,8 @@ const ResultadosPage = () => {
   }, []);
 
   const filteredPlans = healthPlans.filter(plan => {
+
+
     const matchesPrice = plan.precio >= priceRange[0] && plan.precio <= priceRange[1];
     const matchesProvider = selectedProviders.length === 0 || selectedProviders.includes(plan.empresa);
     const matchesRating = plan.rating >= minRating[0];
@@ -144,7 +170,7 @@ const ResultadosPage = () => {
   };
 
   const clearFilters = () => {
-    setPriceRange([0, 600]);
+    setPriceRange([minPrice, maxPrice]);
     setSelectedProviders([]);
     setMinRating([0]);
     setSelectedClinicas([]);
@@ -238,7 +264,7 @@ const ResultadosPage = () => {
               variant="outline"
               size="sm"
               className="shrink-0 gap-2 rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
-              onClick={() => setPriceRange([0, 200])}
+              onClick={() => setPriceRange([0, 100000])}
             >
               <Building2 className="h-4 w-4" />
               Planes básicos
@@ -247,7 +273,7 @@ const ResultadosPage = () => {
               variant="outline"
               size="sm"
               className="shrink-0 gap-2 rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
-              onClick={() => setPriceRange([300, 600])}
+              onClick={() => setPriceRange([500000, 5000000])}
             >
               <Stethoscope className="h-4 w-4" />
               Cobertura premium
@@ -278,6 +304,10 @@ const ResultadosPage = () => {
               minRating={minRating}
               onMinRatingChange={setMinRating}
               onClearFilters={clearFilters}
+              // 🔥 NUEVAS PROPS DE LÍMITES
+              minLimit={minPrice} 
+              maxLimit={maxPrice} 
+              // 🔥 FIN NUEVAS PROPS
             />
           </aside>
 
@@ -297,6 +327,10 @@ const ResultadosPage = () => {
                   minRating={minRating}
                   onMinRatingChange={setMinRating}
                   onClearFilters={clearFilters}
+                  // 🔥 NUEVAS PROPS DE LÍMITES
+                  minLimit={minPrice} 
+                  maxLimit={maxPrice} 
+                  // 🔥 FIN NUEVAS PROPS
                 />
               </div>
             </SheetContent>
