@@ -1,4 +1,5 @@
 export { ComparisonBar } from './ComparisonBar';
+export { FloatingComparisonCart } from './FloatingComparisonCart';
 export { FloatingQuoteButton } from './FloatingQuoteButton';
 export { NavLink } from './NavLink';
 export { ScrollableTabs } from './ScrollableTabs';
@@ -11,3 +12,5 @@ export { ResultsHeaderBar } from './ResultsHeaderBar';
 export { ResultsGrid } from './ResultsGrid';
 export { PlanCard } from './PlanCard';
 export { PlanDetailsModal } from './PlanDetailsModal';
+export { PdfDownloadSection } from './PdfDownloadSection';
+export { PdfComparisonTemplate, generatePdfHtml } from './PdfComparisonTemplate';

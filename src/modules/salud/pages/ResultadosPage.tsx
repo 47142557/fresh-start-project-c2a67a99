@@ -7,7 +7,7 @@ import { Helmet } from "react-helmet-async";
 import Layout from "@/layouts/Layout";
 import FormQuote from "@/modules/salud/components/FormQuote";
 import { FloatingQuoteButton } from "@/modules/salud/components/FloatingQuoteButton";
-import { ComparisonBar } from "@/modules/salud/components/ComparisonBar";
+import { FloatingComparisonCart } from "@/modules/salud/components/FloatingComparisonCart";
 import { ResultsFilterSidebar } from "@/modules/salud/components/ResultsFilterSidebar";
 import { ResultsHeaderBar } from "@/modules/salud/components/ResultsHeaderBar";
 import { ResultsGrid } from "@/modules/salud/components/ResultsGrid";
@@ -216,11 +216,10 @@ const minPrice = numericPrices.length > 0 ? Math.floor(Math.min(...numericPrices
         </DialogContent>
       </Dialog>
 
-      <ComparisonBar 
+      <FloatingComparisonCart 
         plans={comparisonPlansList}
         onRemove={toggleComparison}
         onCompare={handleCompare}
-        isComparisonModalOpen={false}
       />
       
       {/* Hero Carousel Banner */}
