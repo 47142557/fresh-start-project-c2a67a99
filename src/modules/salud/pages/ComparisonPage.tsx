@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { X, Plus, Search, Check, Trash2, Star, ArrowLeft, ChevronDown, ChevronRight } from "lucide-react";
+import { X, Plus, Search, Check, Trash2, Star, ArrowLeft, ChevronDown, ChevronRight, Save } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/layouts/Layout";
@@ -13,8 +13,10 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useToast } from "@/hooks/use-toast";
 import { ScrollableTabs } from "@/modules/salud/components/ScrollableTabs";
 import { PdfDownloadSection } from "@/modules/salud/components/PdfDownloadSection";
+import { SaveQuoteModal } from "@/modules/salud/components/SaveQuoteModal";
 import { HealthPlan } from "@/core/interfaces/plan/planes";
 import { Clinica } from "@/core/interfaces/plan/clinicas";
+import { useVendorAuth } from "@/modules/vendor/hooks/useVendorAuth";
 
 // --- INTERFACES ---
 interface ComparisonPageProps {
@@ -101,10 +103,14 @@ export const ComparisonPage = ({
 }: ComparisonPageProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isVendor } = useVendorAuth();
+  
   const [activeTab, setActiveTab] = useState("beneficios"); 
   const [activeClinicaTab, setActiveClinicaTab] = useState("todas"); 
   const [searchTerm, setSearchTerm] = useState("");
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [editedPrices, setEditedPrices] = useState<Record<string, number>>({});
   
   // Internal state management
   const [internalPlansToCompare, setInternalPlansToCompare] = useState<HealthPlan[]>([]);
@@ -578,7 +584,18 @@ export const ComparisonPage = ({
                 </p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {isVendor && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSaveModalOpen(true)}
+                  disabled={plansToCompare.length === 0}
+                >
+                  <Save className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Guardar</span>
+                </Button>
+              )}
               <Badge variant="secondary" className="text-xs">{plansToCompare.length} planes</Badge>
               <Badge variant="outline" className="text-xs">Máx. 4</Badge>
             </div>
@@ -619,14 +636,33 @@ export const ComparisonPage = ({
             </TabsContent>
           </Tabs>
 
-          {/* PDF Download Section */}
+          {/* PDF Download Section - Price editing only for vendors */}
           <PdfDownloadSection 
             plans={plansToCompare}
             groupedAttributes={groupedAttributes}
-            canEditPrices={false} // Set to true for users who can edit prices
+            canEditPrices={isVendor}
           />
         </div>
       </div>
+
+      {/* Save Quote Modal - Only for vendors */}
+      {isVendor && user && (
+        <SaveQuoteModal
+          open={saveModalOpen}
+          onOpenChange={setSaveModalOpen}
+          plans={plansToCompare}
+          editedPrices={editedPrices}
+          userId={user.id}
+          onSaved={() => {
+            toast({
+              title: "Cotización guardada",
+              description: "Puedes verla en tu dashboard de cotizaciones.",
+            });
+          }}
+        />
+        </div>
+      </div>
+      )}
     </Layout>
   );
 };
