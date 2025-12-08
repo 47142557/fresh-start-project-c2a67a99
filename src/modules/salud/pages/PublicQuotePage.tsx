@@ -21,7 +21,7 @@ import {
   XCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getQuoteByToken, recordQuoteView, SavedQuote } from "@/services/quotes.service";
+import { getQuoteByToken, recordQuoteView, PublicQuote } from "@/services/quotes.service";
 import { supabase } from "@/integrations/supabase/client";
 
 export const PublicQuotePage = () => {
@@ -29,7 +29,7 @@ export const PublicQuotePage = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
-  const [quote, setQuote] = useState<SavedQuote | null>(null);
+  const [quote, setQuote] = useState<PublicQuote | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [requiresCode, setRequiresCode] = useState(false);
@@ -57,18 +57,22 @@ export const PublicQuotePage = () => {
         return;
       }
 
-      // Check if access code is required
-      if (fetchedQuote.access_code) {
-        const providedCode = searchParams.get("code");
-        if (providedCode && providedCode === fetchedQuote.access_code) {
-          setQuote(fetchedQuote);
-          recordView(fetchedQuote.id, providedCode);
-        } else {
-          setRequiresCode(true);
-        }
-      } else {
+      // Try to record view with optional code from URL
+      // Server-side validation handles access code check
+      const providedCode = searchParams.get("code");
+      const viewRecorded = await recordQuoteView(
+        fetchedQuote.id,
+        providedCode || undefined,
+        navigator.userAgent,
+        document.referrer
+      );
+
+      if (viewRecorded) {
+        // Access granted - view was recorded successfully
         setQuote(fetchedQuote);
-        recordView(fetchedQuote.id);
+      } else {
+        // Access denied - likely needs access code
+        setRequiresCode(true);
       }
     } catch (err) {
       console.error("Error loading quote:", err);
@@ -78,40 +82,28 @@ export const PublicQuotePage = () => {
     }
   };
 
-  const recordView = async (quoteId: string, code?: string) => {
-    try {
-      await recordQuoteView(
-        quoteId,
-        code,
-        navigator.userAgent,
-        document.referrer
-      );
-    } catch (err) {
-      console.error("Error recording view:", err);
-    }
-  };
+  // recordView moved to loadQuote - server validates access code
 
   const verifyAccessCode = async () => {
-    if (!token || !accessCode) return;
+    if (!token || !accessCode || !quote) return;
 
     setIsVerifying(true);
 
     try {
-      const { quote: fetchedQuote, error: fetchError } = await getQuoteByToken(token);
+      // Use server-side validation via record_quote_view
+      const viewRecorded = await recordQuoteView(
+        quote.id,
+        accessCode,
+        navigator.userAgent,
+        document.referrer
+      );
 
-      if (fetchError || !fetchedQuote) {
-        toast({
-          title: "Error",
-          description: "No se pudo verificar el código.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (fetchedQuote.access_code === accessCode) {
-        setQuote(fetchedQuote);
+      if (viewRecorded) {
         setRequiresCode(false);
-        recordView(fetchedQuote.id, accessCode);
+        toast({
+          title: "Acceso concedido",
+          description: "Código verificado correctamente.",
+        });
       } else {
         toast({
           title: "Código incorrecto",
@@ -289,11 +281,6 @@ export const PublicQuotePage = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
             {quote?.quote_name || "Cotización de Planes"}
           </h1>
-          {quote?.client_name && (
-            <p className="text-muted-foreground">
-              Preparada para: <span className="font-medium">{quote.client_name}</span>
-            </p>
-          )}
         </div>
 
         {/* Custom Message */}
