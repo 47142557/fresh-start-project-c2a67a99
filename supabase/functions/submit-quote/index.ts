@@ -10,9 +10,9 @@ const personalDataSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email().max(255),
   phone: z.string().min(8).max(20),
-  region: z.string().max(50).optional(),
-  medioContacto: z.string().max(20).optional(),
-}).optional();
+  region: z.string().max(50).optional().default(''),
+  medioContacto: z.string().max(20).optional().default(''),
+});
 
 const quoteRequestSchema = z.object({
   group: z.number().min(1).max(4),
