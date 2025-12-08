@@ -1,8 +1,8 @@
 import { HealthPlan } from "@/core/interfaces/plan/planes";
 import { Clinica } from "@/core/interfaces/plan/clinicas";
-import { ResultsFilterSidebar } from "../ResultsFilterSidebar";
-import { ResultsHeaderBar } from "../ResultsHeaderBar";
-import { ResultsGrid } from "../ResultsGrid";
+import { ResultsFilterSidebar } from "./ResultsFilterSidebar";
+import { ResultsHeaderBar } from "./ResultsHeaderBar";
+import { ResultsGrid } from "./ResultsGrid";
 
 interface ResultsMainContentProps {
   // Filter props

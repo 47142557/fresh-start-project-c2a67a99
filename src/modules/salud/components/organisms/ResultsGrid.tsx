@@ -1,6 +1,6 @@
 import { Search } from "lucide-react";
-import { PlanCard } from "./PlanCard";
-import { PlanCardSkeleton } from "./PlanCardSkeleton"; // <-- NUEVA IMPORTACIÓN
+import { PlanCard } from "../molecules/PlanCard";
+import { PlanCardSkeleton } from "../atoms/PlanCardSkeleton";
 import type { HealthPlan } from "@/core/interfaces/plan/planes";
 
 

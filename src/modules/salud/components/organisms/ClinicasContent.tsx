@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollableTabs } from "@/modules/salud/components/ScrollableTabs";
+import { ScrollableTabs } from "../atoms/ScrollableTabs";
 import { HealthPlan } from "@/core/interfaces/plan/planes";
 import { Clinica } from "@/core/interfaces/plan/clinicas";
 import { ClinicasTable } from "./ClinicasTable";

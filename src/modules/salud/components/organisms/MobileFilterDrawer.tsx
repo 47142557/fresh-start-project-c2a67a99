@@ -1,6 +1,6 @@
 import { Clinica } from "@/core/interfaces/plan/clinicas";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ResultsFilterSidebar } from "../ResultsFilterSidebar";
+import { ResultsFilterSidebar } from "./ResultsFilterSidebar";
 
 interface MobileFilterDrawerProps {
   open: boolean;
