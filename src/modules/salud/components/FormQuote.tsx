@@ -273,9 +273,6 @@ const FormQuote = () => {
   };
 
   const submitFormManually = async () => {
-    console.log('--- Formulario Finalizado y Enviado ---');
-    console.log(formData);
-    
     toast({
       title: "Enviando cotización...",
       description: "Por favor espera mientras procesamos tu solicitud",
@@ -310,14 +307,12 @@ const FormQuote = () => {
     const result = await submitQuote(quoteData);
 
     if (!result.success) {
-      console.error('Error al enviar cotización:', result.error);
       toast({
         title: "Error al enviar",
         description: "No pudimos procesar tu cotización. Por favor intenta nuevamente.",
         variant: "destructive"
       });
     } else {
-      console.log('Cotización enviada exitosamente:', result.data);
       toast({
         title: "¡Cotización enviada!",
         description: "Hemos recibido tu solicitud. Te contactaremos pronto.",

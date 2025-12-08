@@ -1,41 +1,78 @@
-
-// import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3'
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
-interface QuoteRequest {
-  group: number;
-  edad_1: number;
-  edad_2: number;
-  numkids: number;
-  edadHijo1: number;
-  edadHijo2: number;
-  edadHijo3: number;
-  edadHijo4: number;
-  edadHijo5: number;
-  zone_type: string;
-  tipo: string;
-  sueldo: number;
-  aporteOS: number;
-  personalData: {
-    name: string;
-    email: string;
-    phone: string;
-    region: string;
-    medioContacto: string;
-  };
+
+// Zod schema for input validation
+const personalDataSchema = z.object({
+  name: z.string().min(1).max(100),
+  email: z.string().email().max(255),
+  phone: z.string().min(8).max(20),
+  region: z.string().max(50).optional(),
+  medioContacto: z.string().max(20).optional(),
+}).optional();
+
+const quoteRequestSchema = z.object({
+  group: z.number().min(1).max(4),
+  edad_1: z.number().min(0).max(120),
+  edad_2: z.number().min(0).max(120).optional(),
+  numkids: z.number().min(0).max(5).optional(),
+  edadHijo1: z.number().min(0).max(30).optional(),
+  edadHijo2: z.number().min(0).max(30).optional(),
+  edadHijo3: z.number().min(0).max(30).optional(),
+  edadHijo4: z.number().min(0).max(30).optional(),
+  edadHijo5: z.number().min(0).max(30).optional(),
+  zone_type: z.string().max(50).optional(),
+  tipo: z.enum(['P', 'D']),
+  sueldo: z.number().min(0).max(100000000).optional(),
+  aporteOS: z.number().min(0).max(100000000).optional(),
+  personalData: personalDataSchema,
+});
+
+type QuoteRequest = z.infer<typeof quoteRequestSchema>;
+
+// Simple in-memory rate limiter (per IP)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const RATE_LIMIT_MAX = 10; // Max 10 requests per minute per IP
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false;
+  }
+  
+  record.count++;
+  return true;
 }
 
-Deno.serve(async (req: { method: string; json: () => QuoteRequest | PromiseLike<QuoteRequest>; }) => {
+Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('Submit Quote - Iniciando procesamiento de cotización');
+    // Rate limiting
+    const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 
+                     req.headers.get('x-real-ip') || 
+                     'unknown';
+    
+    if (!checkRateLimit(clientIP)) {
+      return new Response(
+        JSON.stringify({ error: 'Demasiadas solicitudes. Intente nuevamente en un minuto.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Verificar que la URL externa esté configurada (fail-fast)
     const EXTERNAL_QUOTE_URL = Deno.env.get('HEALTH_EXTERNAL_QUOTE_URL');
@@ -47,12 +84,29 @@ Deno.serve(async (req: { method: string; json: () => QuoteRequest | PromiseLike<
       );
     }
 
-    // Parsear el cuerpo de la solicitud
-    const quoteData: QuoteRequest = await req.json();
-    console.log('Submit Quote - Datos recibidos:', JSON.stringify(quoteData, null, 2));
-
-    // Nota: personalData es opcional para cotizaciones de precios
-    // Solo es requerido cuando el usuario completa el formulario de contacto
+    // Parsear y validar el cuerpo de la solicitud
+    const rawData = await req.json();
+    const parseResult = quoteRequestSchema.safeParse(rawData);
+    
+    if (!parseResult.success) {
+      console.error('Validation error:', parseResult.error.flatten());
+      return new Response(
+        JSON.stringify({ 
+          error: 'Datos de solicitud inválidos.',
+          details: parseResult.error.flatten().fieldErrors
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    const quoteData: QuoteRequest = parseResult.data;
+    
+    // Log only non-sensitive data
+    console.log('Submit Quote - Processing request', { 
+      group: quoteData.group, 
+      tipo: quoteData.tipo,
+      hasPersonalData: !!quoteData.personalData 
+    });
 
     // Preparar datos para enviar al endpoint externo
     const externalPayload = {
@@ -73,8 +127,6 @@ Deno.serve(async (req: { method: string; json: () => QuoteRequest | PromiseLike<
       timestamp: new Date().toISOString()
     };
 
-    console.log('Submit Quote - Enviando datos al endpoint externo:', EXTERNAL_QUOTE_URL);
-
     // Hacer la llamada al endpoint externo
     const externalResponse = await fetch(EXTERNAL_QUOTE_URL, {
       method: 'POST',
@@ -86,11 +138,10 @@ Deno.serve(async (req: { method: string; json: () => QuoteRequest | PromiseLike<
 
     if (!externalResponse.ok) {
       const errorText = await externalResponse.text();
-      console.error(`Submit Quote - Error del endpoint externo (${externalResponse.status}):`, errorText);
+      console.error(`Submit Quote - External endpoint error (${externalResponse.status})`);
       return new Response(
         JSON.stringify({ 
           error: 'Error al procesar la cotización',
-          details: errorText 
         }),
         { 
           status: externalResponse.status, 
@@ -100,7 +151,7 @@ Deno.serve(async (req: { method: string; json: () => QuoteRequest | PromiseLike<
     }
 
     const externalData = await externalResponse.json();
-    console.log('Submit Quote - Respuesta exitosa del endpoint externo');
+    console.log('Submit Quote - Success');
 
     return new Response(
       JSON.stringify({ 
@@ -115,11 +166,10 @@ Deno.serve(async (req: { method: string; json: () => QuoteRequest | PromiseLike<
     );
 
   } catch (error) {
-    console.error('Submit Quote - Error inesperado:', error);
+    console.error('Submit Quote - Unexpected error:', error instanceof Error ? error.message : 'Unknown');
     return new Response(
       JSON.stringify({ 
         error: 'Error interno del servidor',
-        details: error instanceof Error ? error.message : 'Error desconocido'
       }),
       { 
         status: 500, 
