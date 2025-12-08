@@ -73,8 +73,17 @@ const ComparisonStyles = `
 `;
 
 // --- COMPONENTS ---
-const PlanHeader = React.memo(({ plan, onRemovePlan }: { plan: HealthPlan; onRemovePlan: (planId: string) => void }) => (
-  <div className="relative flex flex-col items-center justify-center p-3 h-full border-b border-border bg-muted/30">
+const PlanHeader = React.memo(({ plan, onRemovePlan, isRecommended = false }: { plan: HealthPlan; onRemovePlan: (planId: string) => void; isRecommended?: boolean }) => (
+  <div className={`relative flex flex-col items-center justify-center p-4 h-full border-b-2 
+    ${isRecommended ? "bg-success/10 border-success" : "bg-muted/30 border-border"}`}
+  >
+    {/* Recommended Badge */}
+    {isRecommended && (
+      <div className="absolute -top-1 left-1/2 -translate-x-1/2 bg-success text-success-foreground text-xs font-bold px-3 py-0.5 rounded-b-lg">
+        ✅ RECOMENDADO
+      </div>
+    )}
+    
     <Button 
       variant="ghost" 
       size="icon"
@@ -83,15 +92,32 @@ const PlanHeader = React.memo(({ plan, onRemovePlan }: { plan: HealthPlan; onRem
     >
       <Trash2 className="w-4 h-4" />
     </Button>
-    <div className="flex items-center gap-2 mb-1">
+    
+    {/* Plan Name & Rating */}
+    <div className="flex items-center gap-2 mb-1 mt-2">
       <div className="text-lg font-extrabold text-primary truncate max-w-full">{plan.name}</div>
-      <div className="flex items-center text-yellow-500 text-sm shrink-0">
-        <Star className="w-4 h-4 fill-yellow-500" />
-        <span className="ml-1">{plan.rating}</span>
+    </div>
+    <div className="flex items-center gap-2">
+      <div className="flex items-center bg-cta-highlight text-cta-highlight-foreground text-sm px-2 py-0.5 rounded-full font-bold">
+        <Star className="w-4 h-4 fill-current mr-1" />
+        <span>{plan.rating}</span>
       </div>
     </div>
-    <div className="text-xs text-muted-foreground">{plan.empresa}</div>
-    <div className="text-base font-bold text-green-600 mt-1">${plan.precio}</div>
+    <div className="text-xs text-muted-foreground mt-1">{plan.empresa}</div>
+    
+    {/* Price - Large & Bold */}
+    <div className="text-2xl font-extrabold text-success mt-2">
+      ${plan.precio?.toLocaleString('es-AR')}
+    </div>
+    <div className="text-xs text-muted-foreground">por mes</div>
+    
+    {/* CTA Button */}
+    <Button 
+      size="sm"
+      className="mt-3 bg-gradient-accent text-accent-foreground font-bold text-xs px-4 hover:opacity-90 shadow-accent"
+    >
+      SOLICITAR ESTE YA
+    </Button>
   </div>
 ));
 
@@ -452,10 +478,12 @@ export const HealthPlanComparisonModal = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 flex flex-col bg-background">
-        <DialogHeader className="px-6 py-4 border-b border-border shrink-0 bg-background">
-          <DialogTitle className="text-2xl font-bold">Comparación Eficiente de Planes de Salud</DialogTitle>
-          <DialogDescription className="text-sm text-muted-foreground">
-            Compara hasta 4 planes de salud lado a lado. Revisa beneficios, cartilla médica y agrega nuevos planes.
+        <DialogHeader className="px-6 py-5 border-b border-border shrink-0 bg-gradient-header text-primary-foreground">
+          <DialogTitle className="text-2xl font-extrabold flex items-center gap-2">
+            Comparador de Planes <span className="text-cta-highlight">Online</span> 🚀
+          </DialogTitle>
+          <DialogDescription className="text-sm text-primary-foreground/80">
+            Compará hasta 4 planes de salud lado a lado. Revisá beneficios, cartilla médica y elegí el mejor.
           </DialogDescription>
         </DialogHeader>
 
