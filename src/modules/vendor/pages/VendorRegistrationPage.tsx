@@ -7,8 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Building2, Phone, MessageCircle } from 'lucide-react';
 import AuthService from '@/services/auth.service';
-import { assignRole } from '@/services/roles.service';
-import { createVendorProfile } from '@/services/vendor.service';
+import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/layouts/Layout';
 
 export const VendorRegistrationPage = () => {
@@ -16,7 +15,6 @@ export const VendorRegistrationPage = () => {
   const { toast } = useToast();
   
   const [isLoading, setIsLoading] = useState(false);
-  const [step, setStep] = useState<'account' | 'profile'>('account');
   
   // Account data
   const [email, setEmail] = useState('');
@@ -51,6 +49,25 @@ export const VendorRegistrationPage = () => {
       return;
     }
 
+    // Input validation
+    if (businessName && businessName.length > 100) {
+      toast({
+        title: 'Error',
+        description: 'El nombre comercial no puede exceder 100 caracteres',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (phone && phone.length > 20) {
+      toast({
+        title: 'Error',
+        description: 'El número de teléfono no puede exceder 20 caracteres',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -71,21 +88,23 @@ export const VendorRegistrationPage = () => {
       }
 
       if (user) {
-        // Assign vendor role
-        const { error: roleError } = await assignRole(user.id, 'vendor');
-        if (roleError) {
-          console.error('Error assigning vendor role:', roleError);
-        }
-
-        // Create vendor profile
-        const { error: profileError } = await createVendorProfile(user.id, {
-          business_name: businessName || `${firstName} ${lastName}`,
-          phone,
-          whatsapp: whatsapp || phone,
+        // Call secure edge function to register vendor (handles role + profile server-side)
+        const { data, error: vendorError } = await supabase.functions.invoke('register-vendor', {
+          body: {
+            business_name: businessName || `${firstName} ${lastName}`,
+            phone: phone.trim(),
+            whatsapp: (whatsapp || phone).trim(),
+          },
         });
 
-        if (profileError) {
-          console.error('Error creating vendor profile:', profileError);
+        if (vendorError) {
+          console.error('Error registering vendor:', vendorError);
+          toast({
+            title: 'Error',
+            description: 'Error al crear perfil de vendedor. Por favor contacte soporte.',
+            variant: 'destructive',
+          });
+          return;
         }
 
         toast({
@@ -132,6 +151,7 @@ export const VendorRegistrationPage = () => {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     required
+                    maxLength={50}
                     disabled={isLoading}
                   />
                 </div>
@@ -142,6 +162,7 @@ export const VendorRegistrationPage = () => {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     required
+                    maxLength={50}
                     disabled={isLoading}
                   />
                 </div>
@@ -155,6 +176,7 @@ export const VendorRegistrationPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  maxLength={255}
                   disabled={isLoading}
                 />
               </div>
@@ -167,6 +189,7 @@ export const VendorRegistrationPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                   disabled={isLoading}
                 />
               </div>
@@ -179,6 +202,7 @@ export const VendorRegistrationPage = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  minLength={6}
                   disabled={isLoading}
                 />
               </div>
@@ -198,6 +222,7 @@ export const VendorRegistrationPage = () => {
                         onChange={(e) => setBusinessName(e.target.value)}
                         className="pl-10"
                         placeholder="Tu nombre o empresa"
+                        maxLength={100}
                         disabled={isLoading}
                       />
                     </div>
@@ -214,6 +239,7 @@ export const VendorRegistrationPage = () => {
                         onChange={(e) => setPhone(e.target.value)}
                         className="pl-10"
                         placeholder="+54 11 1234-5678"
+                        maxLength={20}
                         disabled={isLoading}
                       />
                     </div>
@@ -230,6 +256,7 @@ export const VendorRegistrationPage = () => {
                         onChange={(e) => setWhatsapp(e.target.value)}
                         className="pl-10"
                         placeholder="Mismo que teléfono si no especificas"
+                        maxLength={20}
                         disabled={isLoading}
                       />
                     </div>

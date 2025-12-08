@@ -79,11 +79,26 @@ export interface QuoteView {
 }
 
 /**
+ * Get the current authenticated user ID
+ */
+const getCurrentUserId = async (): Promise<string | null> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id || null;
+};
+
+/**
  * Get all quotes for the current user
  */
 export const getUserQuotes = async (
   userId: string
 ): Promise<{ quotes: SavedQuote[]; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  // Security check: only allow fetching own quotes
+  if (!currentUserId || currentUserId !== userId) {
+    return { quotes: [], error: new Error('Unauthorized') };
+  }
+
   const { data, error } = await supabase
     .from('saved_quotes')
     .select('*')
@@ -97,15 +112,22 @@ export const getUserQuotes = async (
 };
 
 /**
- * Get a single quote by ID
+ * Get a single quote by ID (with owner verification)
  */
 export const getQuoteById = async (
   quoteId: string
 ): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  if (!currentUserId) {
+    return { quote: null, error: new Error('Not authenticated') };
+  }
+
   const { data, error } = await supabase
     .from('saved_quotes')
     .select('*')
     .eq('id', quoteId)
+    .eq('user_id', currentUserId) // Owner verification
     .maybeSingle();
 
   return {
@@ -177,6 +199,13 @@ export const saveQuote = async (
   userId: string,
   quoteData: CreateQuoteData
 ): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  // Security check: only allow saving quotes for current user
+  if (!currentUserId || currentUserId !== userId) {
+    return { quote: null, error: new Error('Unauthorized') };
+  }
+
   const { data, error } = await supabase
     .from('saved_quotes')
     .insert([
@@ -209,16 +238,23 @@ export const saveQuote = async (
 };
 
 /**
- * Update an existing quote
+ * Update an existing quote (with owner verification)
  */
 export const updateQuote = async (
   quoteId: string,
   quoteData: UpdateQuoteData
 ): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  if (!currentUserId) {
+    return { quote: null, error: new Error('Not authenticated') };
+  }
+
   const { data, error } = await supabase
     .from('saved_quotes')
     .update(quoteData)
     .eq('id', quoteId)
+    .eq('user_id', currentUserId) // Owner verification
     .select()
     .single();
 
@@ -229,16 +265,23 @@ export const updateQuote = async (
 };
 
 /**
- * Update quote status
+ * Update quote status (with owner verification)
  */
 export const updateQuoteStatus = async (
   quoteId: string,
   status: QuoteStatus
 ): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  if (!currentUserId) {
+    return { quote: null, error: new Error('Not authenticated') };
+  }
+
   const { data, error } = await supabase
     .from('saved_quotes')
     .update({ status })
     .eq('id', quoteId)
+    .eq('user_id', currentUserId) // Owner verification
     .select()
     .single();
 
@@ -249,16 +292,23 @@ export const updateQuoteStatus = async (
 };
 
 /**
- * Update quote notes
+ * Update quote notes (with owner verification)
  */
 export const updateQuoteNotes = async (
   quoteId: string,
   notes: string
 ): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  if (!currentUserId) {
+    return { quote: null, error: new Error('Not authenticated') };
+  }
+
   const { data, error } = await supabase
     .from('saved_quotes')
     .update({ notes })
     .eq('id', quoteId)
+    .eq('user_id', currentUserId) // Owner verification
     .select()
     .single();
 
@@ -269,15 +319,22 @@ export const updateQuoteNotes = async (
 };
 
 /**
- * Delete a quote
+ * Delete a quote (with owner verification)
  */
 export const deleteQuote = async (
   quoteId: string
 ): Promise<{ error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  if (!currentUserId) {
+    return { error: new Error('Not authenticated') };
+  }
+
   const { error } = await supabase
     .from('saved_quotes')
     .delete()
-    .eq('id', quoteId);
+    .eq('id', quoteId)
+    .eq('user_id', currentUserId); // Owner verification
 
   return { error: error as Error | null };
 };
@@ -301,17 +358,35 @@ export const recordQuoteView = async (
     });
 
   return {
-    success: data as boolean,
+    success: !error,
     error: error as Error | null,
   };
 };
 
 /**
- * Get quote views analytics
+ * Get quote views (with owner verification)
  */
 export const getQuoteViews = async (
   quoteId: string
 ): Promise<{ views: QuoteView[]; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  if (!currentUserId) {
+    return { views: [], error: new Error('Not authenticated') };
+  }
+
+  // First verify the quote belongs to the current user
+  const { data: quote } = await supabase
+    .from('saved_quotes')
+    .select('id')
+    .eq('id', quoteId)
+    .eq('user_id', currentUserId)
+    .maybeSingle();
+    
+  if (!quote) {
+    return { views: [], error: new Error('Quote not found or unauthorized') };
+  }
+
   const { data, error } = await supabase
     .from('quote_views')
     .select('*')
@@ -325,19 +400,31 @@ export const getQuoteViews = async (
 };
 
 /**
- * Generate a public link for a quote
+ * Generate a public sharing URL for a quote
  */
-export const makeQuotePublic = async (
+export const getPublicQuoteUrl = (token: string): string => {
+  const baseUrl = window.location.origin;
+  return `${baseUrl}/cotizacion/${token}`;
+};
+
+/**
+ * Toggle quote public status (with owner verification)
+ */
+export const toggleQuotePublic = async (
   quoteId: string,
-  accessCode?: string
+  isPublic: boolean
 ): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  if (!currentUserId) {
+    return { quote: null, error: new Error('Not authenticated') };
+  }
+
   const { data, error } = await supabase
     .from('saved_quotes')
-    .update({
-      is_public: true,
-      access_code: accessCode || null,
-    })
+    .update({ is_public: isPublic })
     .eq('id', quoteId)
+    .eq('user_id', currentUserId) // Owner verification
     .select()
     .single();
 
@@ -348,17 +435,23 @@ export const makeQuotePublic = async (
 };
 
 /**
- * Make a quote private (revoke public access)
+ * Set access code for a quote (with owner verification)
  */
-export const makeQuotePrivate = async (
-  quoteId: string
+export const setQuoteAccessCode = async (
+  quoteId: string,
+  accessCode: string | null
 ): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  const currentUserId = await getCurrentUserId();
+  
+  if (!currentUserId) {
+    return { quote: null, error: new Error('Not authenticated') };
+  }
+
   const { data, error } = await supabase
     .from('saved_quotes')
-    .update({
-      is_public: false,
-    })
+    .update({ access_code: accessCode })
     .eq('id', quoteId)
+    .eq('user_id', currentUserId) // Owner verification
     .select()
     .single();
 
@@ -366,6 +459,24 @@ export const makeQuotePrivate = async (
     quote: data as SavedQuote | null,
     error: error as Error | null,
   };
+};
+
+/**
+ * Make a quote public (alias for toggleQuotePublic with isPublic=true)
+ */
+export const makeQuotePublic = async (
+  quoteId: string
+): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  return toggleQuotePublic(quoteId, true);
+};
+
+/**
+ * Make a quote private (alias for toggleQuotePublic with isPublic=false)
+ */
+export const makeQuotePrivate = async (
+  quoteId: string
+): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+  return toggleQuotePublic(quoteId, false);
 };
 
 const QuotesService = {
@@ -379,6 +490,9 @@ const QuotesService = {
   deleteQuote,
   recordQuoteView,
   getQuoteViews,
+  getPublicQuoteUrl,
+  toggleQuotePublic,
+  setQuoteAccessCode,
   makeQuotePublic,
   makeQuotePrivate,
 };
