@@ -14,6 +14,7 @@ const personalDataSchema = z.object({
   medioContacto: z.string().max(20).optional().default(''),
 });
 
+// Transform to handle empty personalData objects
 const quoteRequestSchema = z.object({
   group: z.number().min(1).max(4),
   edad_1: z.number().min(0).max(120),
@@ -28,8 +29,24 @@ const quoteRequestSchema = z.object({
   tipo: z.enum(['P', 'D']),
   sueldo: z.number().min(0).max(100000000).optional(),
   aporteOS: z.number().min(0).max(100000000).optional(),
-  // personalData is optional - only required when submitting a quote request (not for fetching plans)
-  personalData: personalDataSchema.optional(),
+  // personalData - accept any object shape, validate only if has non-empty values
+  personalData: z.any().optional(),
+}).transform((data) => {
+  // If personalData exists but has empty required fields, set it to undefined
+  if (data.personalData) {
+    const pd = data.personalData;
+    const hasValidData = pd.name?.trim() && pd.email?.trim() && pd.phone?.trim();
+    if (!hasValidData) {
+      return { ...data, personalData: undefined };
+    }
+    // Validate the personalData only if it has content
+    const validatedPd = personalDataSchema.safeParse(pd);
+    if (!validatedPd.success) {
+      return { ...data, personalData: undefined };
+    }
+    return { ...data, personalData: validatedPd.data };
+  }
+  return data;
 });
 
 type QuoteRequest = z.infer<typeof quoteRequestSchema>;
