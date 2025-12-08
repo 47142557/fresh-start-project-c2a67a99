@@ -16,6 +16,7 @@ import {
   VendorDashboardPage,
   VendorProfilePage,
   VendorQuotesPage,
+  VendorMarketingPage,
 } from "./modules/vendor/pages";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/vendedor/dashboard" element={<VendorDashboardPage />} />
             <Route path="/vendedor/perfil" element={<VendorProfilePage />} />
             <Route path="/vendedor/cotizaciones" element={<VendorQuotesPage />} />
+            <Route path="/vendedor/marketing" element={<VendorMarketingPage />} />
             {/* Styleguide */}
             <Route path="/styleguide" element={<StyleGuidePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
