@@ -20,7 +20,7 @@ const HeroSection = () => {
             <Button 
               size="lg" 
               className="text-lg px-8 py-6 bg-gradient-primary hover:opacity-90 transition-all shadow-colorful hover:shadow-card-hover"
-              onClick={() => navigate('/resultados')}
+              onClick={() => navigate('/comparar')}
             >
               Cotizar ahora
             </Button>

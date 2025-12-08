@@ -7,6 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import Index from "./modules/home/pages/Index";
 import ResultadosPage from "./modules/salud/pages/ResultadosPage";
 import { ComparisonPage } from "./modules/salud/pages/ComparisonPage";
+import { PublicQuotePage } from "./modules/salud/pages/PublicQuotePage";
 import NotFound from "./modules/salud/pages/NotFound";
 import { LoginPage, RegisterPage, ForgotPasswordPage } from "./modules/auth/pages";
 import { StyleGuidePage } from "./modules/styleguide/pages";
@@ -30,6 +31,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/resultados" element={<ResultadosPage />} />
             <Route path="/comparar" element={<ComparisonPage />} />
+            {/* Public quote view */}
+            <Route path="/cotizacion/:token" element={<PublicQuotePage />} />
             {/* Auth routes */}
             <Route path="/auth/login" element={<LoginPage />} />
             <Route path="/auth/register" element={<RegisterPage />} />

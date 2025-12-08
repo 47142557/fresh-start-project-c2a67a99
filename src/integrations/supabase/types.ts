@@ -44,36 +44,125 @@ export type Database = {
         }
         Relationships: []
       }
+      quote_views: {
+        Row: {
+          downloaded_pdf: boolean | null
+          id: string
+          ip_address: string | null
+          quote_id: string
+          referrer: string | null
+          time_on_page: number | null
+          user_agent: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          downloaded_pdf?: boolean | null
+          id?: string
+          ip_address?: string | null
+          quote_id: string
+          referrer?: string | null
+          time_on_page?: number | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          downloaded_pdf?: boolean | null
+          id?: string
+          ip_address?: string | null
+          quote_id?: string
+          referrer?: string | null
+          time_on_page?: number | null
+          user_agent?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_views_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "saved_quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_quotes: {
         Row: {
+          access_code: string | null
+          client_email: string | null
+          client_name: string | null
+          client_phone: string | null
           created_at: string | null
+          custom_message: string | null
+          edited_prices: Json | null
+          family_group: string | null
+          first_viewed_at: string | null
           form_data: Json
           id: string
+          is_public: boolean | null
+          last_viewed_at: string | null
           notes: string | null
+          pdf_html: string | null
           plan_ids: string[] | null
+          public_token: string | null
+          quote_name: string | null
+          request_type: string | null
+          residence_zone: string | null
           status: string | null
           updated_at: string | null
           user_id: string
+          view_count: number | null
         }
         Insert: {
+          access_code?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
           created_at?: string | null
+          custom_message?: string | null
+          edited_prices?: Json | null
+          family_group?: string | null
+          first_viewed_at?: string | null
           form_data: Json
           id?: string
+          is_public?: boolean | null
+          last_viewed_at?: string | null
           notes?: string | null
+          pdf_html?: string | null
           plan_ids?: string[] | null
+          public_token?: string | null
+          quote_name?: string | null
+          request_type?: string | null
+          residence_zone?: string | null
           status?: string | null
           updated_at?: string | null
           user_id: string
+          view_count?: number | null
         }
         Update: {
+          access_code?: string | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
           created_at?: string | null
+          custom_message?: string | null
+          edited_prices?: Json | null
+          family_group?: string | null
+          first_viewed_at?: string | null
           form_data?: Json
           id?: string
+          is_public?: boolean | null
+          last_viewed_at?: string | null
           notes?: string | null
+          pdf_html?: string | null
           plan_ids?: string[] | null
+          public_token?: string | null
+          quote_name?: string | null
+          request_type?: string | null
+          residence_zone?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string
+          view_count?: number | null
         }
         Relationships: []
       }
@@ -161,6 +250,16 @@ export type Database = {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
+        }
+        Returns: boolean
+      }
+      record_quote_view: {
+        Args: {
+          p_access_code?: string
+          p_ip_address?: string
+          p_quote_id: string
+          p_referrer?: string
+          p_user_agent?: string
         }
         Returns: boolean
       }
