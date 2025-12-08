@@ -222,11 +222,12 @@ const minPrice = numericPrices.length > 0 ? Math.floor(Math.min(...numericPrices
         onCompare={handleCompare}
       />
       
-      {/* Hero Carousel Banner */}
-      <div className="relative bg-gradient-to-r from-primary via-primary/90 to-secondary overflow-hidden">
+      {/* Hero Carousel Banner - Commercial Style */}
+      <div className="relative bg-gradient-header overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yLjIgMS44LTQgNC00czQgMS44IDQgNC0xLjggNC00IDQtNC0xLjgtNC00eiIvPjwvZz48L2c+PC9zdmc+')] opacity-30" />
-        <div className="container mx-auto px-4 py-6 lg:py-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="container mx-auto px-4 py-8 lg:py-10">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            {/* Carousel Content */}
             <Carousel
               opts={{ align: "start", loop: true }}
               plugins={[Autoplay({ delay: 4000, stopOnInteraction: false })]}
@@ -235,23 +236,35 @@ const minPrice = numericPrices.length > 0 ? Math.floor(Math.min(...numericPrices
               <CarouselContent>
                 {heroSlides.map((slide, index) => (
                   <CarouselItem key={index}>
-                    <h1 className="text-2xl lg:text-3xl font-bold text-primary-foreground">
+                    <h1 className="text-3xl lg:text-4xl font-extrabold text-primary-foreground drop-shadow-lg">
                       {slide.title}
                     </h1>
-                    <p className="text-primary-foreground/80 text-sm mt-1">
+                    <p className="text-primary-foreground/90 text-base mt-2 font-medium">
                       {slide.subtitle}
                     </p>
                   </CarouselItem>
                 ))}
               </CarouselContent>
             </Carousel>
-            <div className="flex gap-2 shrink-0">
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/30">
-                {healthPlans.length} planes
-              </Badge>
-              <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/30">
-                {providers.length} prepagas
-              </Badge>
+
+            {/* Stats & CTA */}
+            <div className="flex flex-col items-center md:items-end gap-3 shrink-0">
+              <div className="flex gap-2">
+                <Badge className="bg-cta-highlight text-cta-highlight-foreground border-0 font-bold text-sm px-4 py-1.5 shadow-lg">
+                  🔥 {healthPlans.length} planes disponibles
+                </Badge>
+                <Badge className="bg-white/20 text-white border-white/30 hover:bg-white/30 font-semibold">
+                  {providers.length} prepagas
+                </Badge>
+              </div>
+              
+              {/* WhatsApp CTA Button */}
+              <Button 
+                className="bg-gradient-cta text-cta-highlight-foreground font-bold rounded-full px-6 py-2 shadow-lg hover:opacity-90 transition-opacity"
+                onClick={() => window.open('https://wa.me/5491100000000', '_blank')}
+              >
+                📱 Consultar por WhatsApp
+              </Button>
             </div>
           </div>
         </div>
