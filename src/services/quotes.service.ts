@@ -115,20 +115,57 @@ export const getQuoteById = async (
 };
 
 /**
- * Get a public quote by token
+ * Public quote interface - excludes PII fields for security
+ */
+export interface PublicQuote {
+  id: string;
+  quote_name: string | null;
+  family_group: string;
+  request_type: string;
+  residence_zone: string;
+  plan_ids: string[];
+  form_data: Json;
+  custom_message: string | null;
+  edited_prices: Record<string, number>;
+  pdf_html: string | null;
+  public_token: string;
+  is_public: boolean;
+  view_count: number;
+  created_at: string | null;
+  // PII fields excluded: client_name, client_email, client_phone, access_code
+}
+
+/**
+ * Get a public quote by token - excludes PII fields for security
  */
 export const getQuoteByToken = async (
   token: string
-): Promise<{ quote: SavedQuote | null; error: Error | null }> => {
+): Promise<{ quote: PublicQuote | null; error: Error | null }> => {
+  // Only select non-PII fields to prevent data exposure
   const { data, error } = await supabase
     .from('saved_quotes')
-    .select('*')
+    .select(`
+      id,
+      quote_name,
+      family_group,
+      request_type,
+      residence_zone,
+      plan_ids,
+      form_data,
+      custom_message,
+      edited_prices,
+      pdf_html,
+      public_token,
+      is_public,
+      view_count,
+      created_at
+    `)
     .eq('public_token', token)
     .eq('is_public', true)
     .maybeSingle();
 
   return {
-    quote: data as SavedQuote | null,
+    quote: data as PublicQuote | null,
     error: error as Error | null,
   };
 };

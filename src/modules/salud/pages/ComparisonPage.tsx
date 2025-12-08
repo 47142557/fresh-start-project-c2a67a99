@@ -660,8 +660,6 @@ export const ComparisonPage = ({
             });
           }}
         />
-        </div>
-      </div>
       )}
     </Layout>
   );
