@@ -5,3 +5,8 @@ export * from './AddPlanTab';
 export * from './ComparisonHeader';
 export * from './ComparisonTabs';
 export * from './ComparisonStyles';
+export * from './QuickNavBar';
+export * from './ResultsHeroBanner';
+export * from './FeaturesSection';
+export * from './ResultsMainContent';
+export * from './MobileFilterDrawer';
