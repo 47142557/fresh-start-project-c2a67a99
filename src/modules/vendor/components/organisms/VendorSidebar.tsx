@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, User, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, User, LogOut, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -12,6 +12,7 @@ interface VendorSidebarProps {
 const navItems = [
   { to: '/vendedor/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/vendedor/cotizaciones', icon: FileText, label: 'Cotizaciones' },
+  { to: '/vendedor/marketing', icon: Sparkles, label: 'Marketing' },
   { to: '/vendedor/perfil', icon: User, label: 'Mi Perfil' },
 ];
 
