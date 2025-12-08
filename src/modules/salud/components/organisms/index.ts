@@ -10,3 +10,7 @@ export * from './ResultsHeroBanner';
 export * from './FeaturesSection';
 export * from './ResultsMainContent';
 export * from './MobileFilterDrawer';
+export * from './QuoteHeader';
+export * from './QuotePlansList';
+export * from './QuoteActions';
+export * from './QuoteFooter';
