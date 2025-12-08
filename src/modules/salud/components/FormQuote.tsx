@@ -56,6 +56,8 @@ const MessageSquareIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 
+const PERSONAL_DATA_STORAGE_KEY = 'visitor_personal_data';
+
 const FormQuote = () => {
   const { toast } = useToast();
   // --- State Variables ---
@@ -69,10 +71,30 @@ const FormQuote = () => {
   const [cotizacionVisible, setCotizacionVisible] = useState(false);
   const [contactoType, setContactoType] = useState<string | null>(null); // 'phone' or 'whatsapp'
   const [formData, setFormData] = useState<QuoteFormData>(initialFormData);
+  const [hasStoredPersonalData, setHasStoredPersonalData] = useState(false);
 
   // --- Refs for continuous increment/decrement ---
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // --- Load stored personal data on mount ---
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem(PERSONAL_DATA_STORAGE_KEY);
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        if (parsedData.name && parsedData.email && parsedData.phone) {
+          setFormData(prev => ({
+            ...prev,
+            personalData: parsedData
+          }));
+          setHasStoredPersonalData(true);
+        }
+      }
+    } catch (error) {
+      // Ignore parsing errors
+    }
+  }, []);
 
   // --- Utility Functions ---
 
@@ -89,6 +111,16 @@ const FormQuote = () => {
         [field]: value
       }
     }));
+  }, []);
+
+  // Save personal data to localStorage when submitted
+  const savePersonalDataToStorage = useCallback((personalData: typeof formData.personalData) => {
+    try {
+      localStorage.setItem(PERSONAL_DATA_STORAGE_KEY, JSON.stringify(personalData));
+      setHasStoredPersonalData(true);
+    } catch (error) {
+      // Ignore storage errors
+    }
   }, []);
 
   const updateChildAge = useCallback((index: number, value: number) => {
@@ -313,6 +345,8 @@ const FormQuote = () => {
         variant: "destructive"
       });
     } else {
+      // Save personal data for future quotes
+      savePersonalDataToStorage(formData.personalData);
       toast({
         title: "¡Cotización enviada!",
         description: "Hemos recibido tu solicitud. Te contactaremos pronto.",
