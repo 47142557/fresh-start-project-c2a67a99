@@ -10,3 +10,6 @@ export * from './QuotePlanCard';
 export * from './QuoteLoadingSkeleton';
 export * from './QuoteErrorState';
 export * from './QuoteAccessForm';
+export * from './ComparisonBar';
+export * from './FloatingQuoteButton';
+export * from './PlanCard';
