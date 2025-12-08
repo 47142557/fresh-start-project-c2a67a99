@@ -28,7 +28,8 @@ const quoteRequestSchema = z.object({
   tipo: z.enum(['P', 'D']),
   sueldo: z.number().min(0).max(100000000).optional(),
   aporteOS: z.number().min(0).max(100000000).optional(),
-  personalData: personalDataSchema,
+  // personalData is optional - only required when submitting a quote request (not for fetching plans)
+  personalData: personalDataSchema.optional(),
 });
 
 type QuoteRequest = z.infer<typeof quoteRequestSchema>;
