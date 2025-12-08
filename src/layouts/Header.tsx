@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { UserCheck } from "lucide-react";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -19,9 +20,20 @@ const Header = () => {
             className="h-10 md:hidden"
           />
         </a>
-        <Button onClick={() => navigate('/resultados')} className="shadow-sm">
-          Ver Planes
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => navigate('/vendedor/registro')} 
+            className="shadow-sm"
+          >
+            <UserCheck className="h-4 w-4 mr-1.5" />
+            <span className="hidden sm:inline">Soy Asesor</span>
+            <span className="sm:hidden">Asesor</span>
+          </Button>
+          <Button onClick={() => navigate('/resultados')} className="shadow-sm">
+            Ver Planes
+          </Button>
+        </div>
       </div>
     </header>
   );
