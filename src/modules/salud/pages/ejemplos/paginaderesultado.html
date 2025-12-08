@@ -1,0 +1,201 @@
+<div class="min-h-screen bg-gray-50">
+    
+    <header class="bg-gradient-to-r from-blue-700 to-green-600 text-white p-4 shadow-xl sticky top-0 z-50">
+        <div class="container max-w-7xl mx-auto flex justify-between items-center">
+            
+            <div class="flex flex-col">
+                <span class="text-2xl font-black">Mejor Plan</span>
+                <p class="text-xs text-yellow-300">Consultores en Salud</p>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 bg-white/10 rounded-full pr-3 py-1">
+                    <div class="h-8 w-8 bg-white rounded-full flex items-center justify-center text-blue-700 font-bold text-sm">HP</div>
+                    <span class="text-sm font-semibold hidden sm:inline">Tu Asesor: Hernán Pérez</span>
+                </div>
+                <a href="https://wa.me/TUNUMERO" target="_blank" class="bg-yellow-400 text-blue-900 py-2 px-4 rounded-full font-extrabold shadow-lg hover:bg-yellow-500 transition duration-150">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline mr-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.626 15.19c-.438.86-1.554 1.157-2.316.634l-2.074-1.378c-.61-.407-1.488-.242-1.926.381l-1.63 2.27c-.206.287-.665.37-1.045.187-1.16-.54-2.183-1.402-2.91-2.433-.615-.867-1.057-2.002-.916-3.132.14-.997.77-1.874 1.76-2.26.5" /></svg>
+                    WhatsApp
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container max-w-7xl mx-auto px-4 mt-8">
+        
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-8 border border-gray-200">
+            <h1 class="text-2xl font-extrabold text-gray-900 mb-2">
+                🔎 ¿Qué clínicas son importantes para ti?
+            </h1>
+            <div class="flex gap-4">
+                <div class="relative w-full">
+                    <input type="text" placeholder="Escribe el nombre de tu clínica o prestador..." 
+                           class="w-full pl-12 pr-4 py-3 border-2 border-blue-400 rounded-lg text-lg focus:ring-blue-500 focus:border-blue-500 transition" />
+                    <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <button class="bg-blue-600 text-white py-3 px-6 rounded-lg font-bold hover:bg-blue-700 transition hidden sm:block">
+                    Buscar
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <aside class="lg:col-span-1 bg-white p-5 rounded-xl border shadow-md sticky top-20 h-fit">
+                <h3 class="text-xl font-bold mb-5 text-gray-800">Ajustar la Cartilla</h3>
+                
+                <div class="mb-6 pb-4 border-b">
+                    <label class="block text-sm font-semibold mb-3 text-gray-700">Clínicas Clave (AMBA)</label>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center"><input type="checkbox" checked class="text-green-600 rounded"><span class="ml-2 font-bold text-green-700">Hospital Italiano</span></div>
+                        <div class="flex items-center"><input type="checkbox" class="text-green-600 rounded"><span class="ml-2">Clínica Favaloro</span></div>
+                        <div class="flex items-center"><input type="checkbox" class="text-green-600 rounded"><span class="ml-2">Sanatorio Güemes</span></div>
+                        <div class="flex items-center"><input type="checkbox" class="text-green-600 rounded"><span class="ml-2">Maternidad Suizo</span></div>
+                    </div>
+                </div>
+
+                <div class="mb-6 pb-4 border-b">
+                    <label class="block text-sm font-semibold mb-3 text-gray-700">Presupuesto Mensual</label>
+                    <div class="h-2 w-full bg-blue-200 rounded-full mb-3 relative">
+                        <div class="absolute h-2 bg-blue-600 rounded-full" style="width: 70%; left: 0;"></div>
+                    </div>
+                    <div class="flex justify-between text-sm font-mono text-gray-800">
+                        <span>$220.000</span>
+                        <span>$1.239.000</span>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold mb-3 text-gray-700">Proveedores</label>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex items-center"><input type="radio" name="prov" checked class="text-blue-600"><span class="ml-2 font-bold text-blue-700">Swiss Medical (3)</span></div>
+                        <div class="flex items-center"><input type="radio" name="prov" class="text-blue-600"><span class="ml-2">Galeno (2)</span></div>
+                    </div>
+                </div>
+                
+                <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition shadow-md">
+                    Aplicar Búsqueda
+                </button>
+
+            </aside>
+
+            <main class="lg:col-span-3">
+                
+                <p class="text-lg font-semibold text-gray-700 mb-6">
+                    Se encontraron 3 planes que incluyen el Hospital Italiano
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+
+                    <div class="bg-white border-2 border-green-600 rounded-xl shadow-2xl flex flex-col">
+                        <div class="bg-green-600 text-white text-center py-2 text-sm font-bold rounded-t-xl">
+                            ✅ MEJOR VALOR (INCLUYE ITALIANO)
+                        </div>
+                        <div class="p-5 flex flex-col flex-grow">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-xl font-extrabold text-gray-900">Swiss Medical SMG40</span>
+                                <span class="text-2xl text-yellow-500">⭐</span>
+                            </div>
+                            
+                            <p class="text-xs text-gray-500 mb-4">Cartilla: Cerrado (Alta Gama)</p>
+
+                            <div class="space-y-2 text-sm text-gray-700 flex-grow mb-4">
+                                <p class="font-bold">🏥 COBERTURA CLÍNICA</p>
+                                <ul class="list-disc list-inside ml-2 space-y-0.5">
+                                    <li class="font-bold text-green-700">✅ Hospital Italiano (Incluido)</li>
+                                    <li>Clínica Favaloro (Incluida)</li>
+                                    <li>Maternidad: Suizo (Sí)</li>
+                                </ul>
+                                <p class="font-bold pt-2">💲 CONDICIONES</p>
+                                <ul class="list-disc list-inside ml-2 space-y-0.5">
+                                    <li>Copago: Bajo ($360)</li>
+                                    <li>Precio: $578.333/mes</li>
+                                </ul>
+                            </div>
+                            
+                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition shadow-lg mb-2">
+                                ✅ Contratar SMG40
+                            </button>
+                            <a href="#" class="w-full block text-center text-sm text-gray-600 hover:underline">
+                                Ver todos los Prestadores
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-md flex flex-col">
+                        <div class="bg-gray-100 text-gray-800 text-center py-2 text-sm font-bold rounded-t-xl">
+                            INCLUYE TODAS LAS CLÍNICAS TOP
+                        </div>
+                        <div class="p-5 flex flex-col flex-grow">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-xl font-extrabold text-gray-900">Galeno Plan 220</span>
+                                <span class="text-2xl text-yellow-500">⭐⭐⭐</span>
+                            </div>
+                            
+                            <p class="text-xs text-gray-500 mb-4">Cartilla: Abierto (Máxima Flexibilidad)</p>
+
+                            <div class="space-y-2 text-sm text-gray-700 flex-grow mb-4">
+                                <p class="font-bold">🏥 COBERTURA CLÍNICA</p>
+                                <ul class="list-disc list-inside ml-2 space-y-0.5">
+                                    <li class="font-bold text-green-700">✅ Hospital Italiano (Incluido)</li>
+                                    <li>Sanatorio Güemes (Incluido)</li>
+                                    <li>Maternidad: Total cobertura</li>
+                                </ul>
+                                <p class="font-bold pt-2">💲 CONDICIONES</p>
+                                <ul class="list-disc list-inside ml-2 space-y-0.5">
+                                    <li class="font-bold text-red-600">Copago: Sin Copago</li>
+                                    <li>Precio: $1.238.297/mes</li>
+                                </ul>
+                            </div>
+
+                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition shadow-lg mb-2">
+                                ✅ Contratar Galeno 220
+                            </button>
+                            <a href="#" class="w-full block text-center text-sm text-gray-600 hover:underline">
+                                Ver todos los Prestadores
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-md flex flex-col">
+                         <div class="bg-red-500 text-white text-center py-2 text-sm font-bold rounded-t-xl">
+                            ❌ NO INCLUYE ITALIANO (Ver detalles)
+                        </div>
+                        <div class="p-5 flex flex-col flex-grow">
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-xl font-extrabold text-gray-900">Swiss Medical SMG20</span>
+                                <span class="text-2xl text-yellow-500">⭐</span>
+                            </div>
+                            
+                            <p class="text-xs text-gray-500 mb-4">Cartilla: Global (Básica)</p>
+
+                            <div class="space-y-2 text-sm text-gray-700 flex-grow mb-4">
+                                <p class="font-bold">🏥 COBERTURA CLÍNICA</p>
+                                <ul class="list-disc list-inside ml-2 space-y-0.5">
+                                    <li class="font-bold text-red-600">❌ Hospital Italiano (Excluido)</li>
+                                    <li>Clínica Favaloro (Incluida)</li>
+                                    <li>Maternidad: Sanatorio La Trinidad</li>
+                                </ul>
+                                <p class="font-bold pt-2">💲 CONDICIONES</p>
+                                <ul class="list-disc list-inside ml-2 space-y-0.5">
+                                    <li>Copago: Alto ($550)</li>
+                                    <li>Precio: $481.657/mes</li>
+                                </ul>
+                            </div>
+
+                            <button class="w-full bg-blue-600 text-white py-3 rounded-lg font-extrabold text-lg hover:bg-blue-700 transition shadow-lg mb-2">
+                                ✅ Contratar SMG20
+                            </button>
+                            <a href="#" class="w-full block text-center text-sm text-gray-600 hover:underline">
+                                Ver todos los Prestadores
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+
+            </main>
+        </div>
+
+    </div>
+</div>

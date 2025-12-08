@@ -1,0 +1,112 @@
+<div id="comparison-modal"
+     class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-[999]"
+     style="display: block;"> <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl mx-4 my-8 relative max-h-[90vh] overflow-y-auto">
+       
+        <button onclick="document.getElementById('comparison-modal').style.display='none'"
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-900 z-10 p-2">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
+
+        <header class="text-center p-6 bg-gray-50 border-b">
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-1">
+                Comparador de Planes <span class="text-pink-600">Online</span> 🚀
+            </h2>
+            <p class="text-md text-gray-600">
+                Analiza en detalle las coberturas y clínicas de los planes seleccionados.
+            </p>
+        </header>
+
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-white">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 text-left text-sm font-bold text-gray-700 uppercase w-1/4 min-w-[150px]">
+                            CRITERIO
+                        </th>
+                       
+                        <th scope="col" class="px-6 py-4 text-center text-sm font-bold text-gray-900 uppercase bg-green-50/50 border-l min-w-[200px]">
+                            <p class="text-xl font-extrabold text-blue-800 mb-1">SMG40</p>
+                            <p class="text-xs text-gray-500">Swiss Medical</p>
+                           
+                            <div class="mt-2">
+                                <span class="text-3xl font-black text-green-700">$578.333</span>
+                                <button class="mt-2 w-full bg-pink-600 text-white py-2 rounded-lg font-bold hover:bg-pink-700 transition shadow-md">
+                                    SOLICITAR ESTE YA
+                                </button>
+                            </div>
+                        </th>
+                       
+                        <th scope="col" class="px-6 py-4 text-center text-sm font-bold text-gray-900 uppercase border-l min-w-[200px]">
+                            <p class="text-xl font-extrabold text-gray-800 mb-1">Galeno Plata</p>
+                            <p class="text-xs text-gray-500">Galeno</p>
+                           
+                            <div class="mt-2">
+                                <span class="text-3xl font-black text-gray-700">$376.891</span>
+                                <button class="mt-2 w-full bg-indigo-600 text-white py-2 rounded-lg font-bold hover:bg-indigo-700 transition shadow-md">
+                                    SOLICITAR ESTE
+                                </button>
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                   
+                    <tr class="bg-blue-50/50">
+                        <td class="px-6 py-3 font-semibold text-gray-800">Puntuación / Calidad</td>
+                        <td class="px-6 py-3 text-center border-l">
+                            <span class="text-lg font-black text-green-700">7,8/10</span> puntos
+                        </td>
+                        <td class="px-6 py-3 text-center border-l">
+                            <span class="text-lg font-black text-orange-600">6,5/10</span> puntos
+                        </td>
+                    </tr>
+                   
+                    <tr>
+                        <td class="px-6 py-3 font-medium text-gray-700 flex items-center">
+                            <svg class="h-5 w-5 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                            Clínica Favaloro
+                        </td>
+                        <td class="px-6 py-3 text-center border-l text-lg font-extrabold text-green-500">
+                            ✅
+                        </td>
+                        <td class="px-6 py-3 text-center border-l text-lg font-extrabold text-red-500">
+                            ❌
+                        </td>
+                    </tr>
+                   
+                    <tr>
+                        <td class="px-6 py-3 font-medium text-gray-700 flex items-center">
+                            <svg class="h-5 w-5 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m18 0a9 9 0 00-9-9m-3 2.348l1.391-2.782m0 0L2.25 12h19.5M12 21.75V2.25"></path></svg>
+                            Asistencia al Viajero
+                        </td>
+                        <td class="px-6 py-3 text-center border-l font-bold text-green-700">
+                            100% (Mundial)
+                        </td>
+                        <td class="px-6 py-3 text-center border-l font-bold text-gray-700">
+                            Solo países limítrofes
+                        </td>
+                    </tr>
+                   
+                    <tr class="bg-yellow-50">
+                        <td class="px-6 py-3 font-semibold text-gray-800">Soporte y Venta</td>
+                        <td colspan="2" class="px-6 py-3 text-center border-l">
+                            <p class="text-sm text-gray-700">¿Dudas? Chatea con tu Asesor Hernán:</p>
+                            <a href="https://wa.me/TUNUMERO" target="_blank"
+                               class="mt-1 inline-flex items-center bg-green-500 text-white py-2 px-4 rounded-lg font-bold hover:bg-green-600 transition text-sm">
+                                <svg class="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.626 15.19c-.438.86-1.554 1.157-2.316.634l-2.074-1.378c-.61-.407-1.488-.242-1.926.381l-1.63 2.27c-.206.287-.665.37-1.045.187-1.16-.54-2.183-1.402-2.91-2.433-.615-.867-1.057-2.002-.916-3.132.14-.997.77-1.874 1.76-2.26.5" /></svg>
+                                Contactar (En línea)
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+        <footer class="p-4 bg-gray-50 text-center border-t">
+            <a href="#" class="text-blue-600 hover:underline text-sm">Ver la lista completa de todas las 30 clínicas incluidas</a>
+        </footer>
+    </div>
+</div>
