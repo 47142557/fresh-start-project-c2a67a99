@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { HealthPlan } from "@/core/interfaces/plan/planes";
+
 interface PlanCardProps {
   plan: HealthPlan;
   viewMode: "grid" | "list";
@@ -12,6 +13,24 @@ interface PlanCardProps {
   isRecommended?: boolean;
   highlightClinic?: string;
 }
+
+// Map empresa names to logo file names
+const EMPRESA_LOGOS: Record<string, string> = {
+  "Swiss Medical": "swissmedical.webp",
+  "Swiss-Medical": "swissmedical.webp",
+  "Galeno": "galeno.webp",
+  "OSDE": "osde.png",
+  "Omint": "omint.webp",
+  "Medife": "medife.webp",
+  "Sancor Salud": "sancorsalud.webp",
+  "Avalian": "avalian.webp",
+  "Prevención Salud": "prevencion.webp",
+  "Prevencion": "prevencion.webp",
+  "Hominis": "hominis.png",
+  "Salud Central": "saludcentral.webp",
+  "Doctored": "doctored.webp",
+  "Premedic": "premedic.webp",
+};
 
 // Key clinics to highlight
 const KEY_CLINICS = ["Hospital Italiano", "Clínica Favaloro", "Sanatorio Güemes", "Maternidad Suizo"];
@@ -83,8 +102,19 @@ export const PlanCard = ({
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  {EMPRESA_LOGOS[plan.empresa] ? (
+                    <img 
+                      src={`/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`} 
+                      alt={plan.empresa} 
+                      className="h-6 w-auto object-contain"
+                    />
+                  ) : (
+                    <span className="text-sm font-semibold text-foreground">{plan.empresa}</span>
+                  )}
+                </div>
                 <CardTitle className="text-lg font-bold text-foreground leading-tight">
-                  {plan.empresa} {plan.name}
+                  {plan.name}
                 </CardTitle>
                 <Badge className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs bg-cta-highlight text-cta-highlight-foreground font-bold shrink-0">
                   ⭐ {plan.rating}
