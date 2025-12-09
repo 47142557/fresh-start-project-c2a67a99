@@ -82,44 +82,56 @@ export const PlanCard = ({
       )}
 
       <div className="flex-1 flex flex-col">
-        <CardHeader className="pb-2 pt-4">
+        <CardHeader className="pb-1 pt-2">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg font-bold truncate text-foreground">{plan.name}</CardTitle>
-              <p className="text-sm text-muted-foreground mt-0.5">{plan.empresa}</p>
+              <CardTitle className="text-base font-bold truncate text-foreground">{plan.name}</CardTitle>
+              <p className="text-xs text-muted-foreground">{plan.empresa}</p>
             </div>
-            <Badge className="flex items-center gap-1 px-2 py-1 flex-shrink-0 bg-cta-highlight text-cta-highlight-foreground font-bold">
-              <span>⭐</span>
-              <span>{plan.rating}</span>
-            </Badge>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <Button 
+                variant={isInComparison ? "default" : "outline"}
+                size="sm"
+                onClick={() => onToggleComparison(plan._id)}
+                className={`flex items-center gap-1 h-7 px-2 ${isInComparison ? "bg-primary" : ""}`}
+                title={isInComparison ? "Remover de comparación" : "Agregar a comparación"}
+              >
+                {isInComparison ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
+                <span className="text-xs">{isInComparison ? "Quitar" : "Comparar"}</span>
+              </Button>
+              <Badge className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs bg-cta-highlight text-cta-highlight-foreground font-bold">
+                <span>⭐</span>
+                <span>{plan.rating}</span>
+              </Badge>
+            </div>
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 py-3 space-y-4">
+        <CardContent className="flex-1 py-2 space-y-2">
           {/* Plan Line Badge */}
-          <Badge variant="secondary" className="text-xs font-medium">
+          <Badge variant="secondary" className="text-[10px] font-medium px-1.5 py-0">
             {plan.linea}
           </Badge>
 
           {/* Key Clinics Section */}
           {includedKeyClinics.length > 0 && (
-            <div className="space-y-2">
-              <p className="text-xs font-bold text-foreground flex items-center gap-1">
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold text-foreground flex items-center gap-1">
                 🏥 CLÍNICAS CLAVE
               </p>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-0.5">
                 {KEY_CLINICS.slice(0, 4).map((clinic) => {
                   const included = includedKeyClinics.includes(clinic);
                   return (
                     <span 
                       key={clinic}
-                      className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full
+                      className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0 rounded-full
                         ${included 
                           ? "bg-success/10 text-success" 
                           : "bg-muted text-muted-foreground"
                         }`}
                     >
-                      {included ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                      {included ? <Check className="h-2.5 w-2.5" /> : <X className="h-2.5 w-2.5" />}
                       {clinic.split(" ")[1] || clinic}
                     </span>
                   );
@@ -129,14 +141,14 @@ export const PlanCard = ({
           )}
 
           {/* Key Benefits */}
-          <div className="space-y-2">
-            <p className="text-xs font-bold text-foreground flex items-center gap-1">
+          <div className="space-y-1">
+            <p className="text-[10px] font-bold text-foreground flex items-center gap-1">
               💲 CONDICIONES
             </p>
-            <ul className="space-y-1.5">
+            <ul className="space-y-0.5">
               {plan.attributes?.slice(0, 3).map((attr, idx) => (
-                <li key={`${plan._id}-attr-${idx}`} className="text-xs flex items-start gap-2">
-                  <Check className="h-3.5 w-3.5 text-success mt-0.5 flex-shrink-0" />
+                <li key={`${plan._id}-attr-${idx}`} className="text-[10px] flex items-start gap-1.5">
+                  <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                   <span className="flex-1">
                     <span className="font-semibold text-foreground">{attr.name}:</span>{" "}
                     <span className="text-muted-foreground">{attr.value_name}</span>
@@ -147,61 +159,40 @@ export const PlanCard = ({
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col gap-3 pt-4 border-t border-border/30 bg-muted/20">
+        <CardFooter className="flex flex-col gap-2 pt-2 border-t border-border/30 bg-muted/20">
           {/* Price Section */}
           <div className="flex items-center justify-between w-full">
             <div>
-              <div className="text-3xl font-extrabold text-primary">
+              <div className="text-2xl font-extrabold text-primary">
                 ${plan.precio?.toLocaleString('es-AR')}
               </div>
-              <div className="text-xs text-muted-foreground">por mes</div>
+              <div className="text-[10px] text-muted-foreground">por mes</div>
             </div>
-            <Button 
-              variant={isInComparison ? "default" : "outline"}
-              size="sm"
-              onClick={() => onToggleComparison(plan._id)}
-              className={`flex items-center gap-1.5 ${isInComparison ? "bg-primary" : ""}`}
-              title={isInComparison ? "Remover de comparación" : "Agregar a comparación"}
-            >
-              {isInComparison ? (
-                <>
-                  <Minus className="h-3.5 w-3.5" />
-                  <span className="text-xs">Quitar</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="h-3.5 w-3.5" />
-                  <span className="text-xs">Comparar</span>
-                </>
-              )}
-            </Button>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex gap-2 w-full">
-            <Button 
-              className="flex-1 font-bold bg-gradient-accent hover:opacity-90 text-accent-foreground shadow-accent"
-              onClick={() => onOpenDetails(plan)}
-            >
-              ✅ Contratar
-            </Button>
             <Button 
               variant="outline"
               size="icon"
-              className="shrink-0 border-cta-highlight text-cta-highlight-foreground bg-cta-highlight hover:bg-cta-highlight/90"
+              className="shrink-0 h-8 w-8 border-cta-highlight text-cta-highlight-foreground bg-cta-highlight hover:bg-cta-highlight/90"
               title="Consultar por WhatsApp"
             >
               <MessageCircle className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Secondary Link */}
-          <button 
-            onClick={() => onOpenDetails(plan)}
-            className="text-xs text-primary hover:underline font-medium"
-          >
-            Ver todos los Prestadores →
-          </button>
+          {/* CTA Buttons */}
+          <div className="flex gap-2 w-full">
+            <Button 
+              className="flex-1 h-8 text-sm font-bold bg-gradient-accent hover:opacity-90 text-accent-foreground shadow-accent"
+              onClick={() => onOpenDetails(plan)}
+            >
+              ✅ Contratar
+            </Button>
+            <button 
+              onClick={() => onOpenDetails(plan)}
+              className="text-[10px] text-primary hover:underline font-medium whitespace-nowrap"
+            >
+              Ver Prestadores →
+            </button>
+          </div>
         </CardFooter>
       </div>
     </Card>
