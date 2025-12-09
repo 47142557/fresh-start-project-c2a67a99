@@ -171,11 +171,23 @@ export default {
 			},
 			'fly-to-cart': {
 				'0%': {
-					transform: 'scale(1) translate(0, 0)',
+					transform: 'scale(1) translate(0, 0) rotate(0deg)',
 					opacity: '1'
 				},
+				'20%': {
+					transform: 'scale(0.8) translate(calc(var(--fly-x, 200px) * 0.1), calc(var(--fly-y, -200px) * 0.05 - 30px)) rotate(-5deg)',
+					opacity: '0.9'
+				},
+				'50%': {
+					transform: 'scale(0.5) translate(calc(var(--fly-x, 200px) * 0.4), calc(var(--fly-y, -200px) * 0.3 - 50px)) rotate(-10deg)',
+					opacity: '0.7'
+				},
+				'80%': {
+					transform: 'scale(0.25) translate(calc(var(--fly-x, 200px) * 0.8), calc(var(--fly-y, -200px) * 0.7)) rotate(-15deg)',
+					opacity: '0.4'
+				},
 				'100%': {
-					transform: 'scale(0.15) translate(var(--fly-x, 200px), var(--fly-y, -200px))',
+					transform: 'scale(0.1) translate(var(--fly-x, 200px), var(--fly-y, -200px)) rotate(-20deg)',
 					opacity: '0'
 				}
 			},

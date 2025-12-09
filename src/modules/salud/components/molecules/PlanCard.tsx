@@ -97,40 +97,45 @@ export const PlanCard = ({
       if (cartElement) {
         const cartRect = cartElement.getBoundingClientRect();
         
-        // Create flying clone
+        // Create flying clone - smaller version of card
         const clone = document.createElement('div');
-        clone.className = 'fixed pointer-events-none z-[9999] rounded-lg overflow-hidden shadow-lg';
+        clone.className = 'fixed pointer-events-none z-[9999] rounded-xl overflow-hidden';
         clone.style.cssText = `
-          top: ${cardRect.top}px;
-          left: ${cardRect.left}px;
-          width: ${cardRect.width}px;
-          height: ${cardRect.height}px;
-          --fly-x: ${cartRect.left - cardRect.left}px;
-          --fly-y: ${cartRect.top - cardRect.top}px;
+          top: ${cardRect.top + cardRect.height / 2 - 40}px;
+          left: ${cardRect.left + cardRect.width / 2 - 50}px;
+          width: 100px;
+          height: 80px;
+          --fly-x: ${(cartRect.left + cartRect.width / 2) - (cardRect.left + cardRect.width / 2)}px;
+          --fly-y: ${(cartRect.top + cartRect.height / 2) - (cardRect.top + cardRect.height / 2)}px;
+          transform-origin: center center;
+          box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
         `;
         
-        // Clone card content as image
+        // Clone card content as mini card with logo
         const logoSrc = EMPRESA_LOGOS[plan.empresa] 
           ? `/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`
           : null;
         
         clone.innerHTML = `
-          <div class="bg-card w-full h-full flex items-center justify-center p-4">
-            ${logoSrc ? `<img src="${logoSrc}" alt="${plan.empresa}" class="h-12 w-auto object-contain" />` : `<span class="text-lg font-bold">${plan.empresa}</span>`}
+          <div class="bg-card w-full h-full flex items-center justify-center p-2 border-2 border-primary/30 rounded-xl">
+            ${logoSrc 
+              ? `<img src="${logoSrc}" alt="${plan.empresa}" class="h-10 w-auto object-contain" />` 
+              : `<span class="text-sm font-bold text-foreground">${plan.empresa}</span>`
+            }
           </div>
         `;
         
         document.body.appendChild(clone);
         
-        // Trigger animation
+        // Trigger animation with slight delay for visual effect
         requestAnimationFrame(() => {
-          clone.style.animation = 'fly-to-cart 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+          clone.style.animation = 'fly-to-cart 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
         });
         
         // Remove clone after animation
         setTimeout(() => {
           clone.remove();
-        }, 600);
+        }, 750);
       }
     }
     
