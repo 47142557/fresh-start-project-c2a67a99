@@ -1,7 +1,7 @@
-import { Plus, Minus, Check, X } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRef, useCallback } from "react";
+import { Check, ShoppingCart } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import type { HealthPlan } from "@/core/interfaces/plan/planes";
 interface PlanCardProps {
   plan: HealthPlan;
@@ -86,7 +86,58 @@ export const PlanCard = ({
     return null;
   };
   const banner = getBannerConfig();
-  return <Card className={`card-commercial bg-card ${viewMode === "list" ? "flex flex-col md:flex-row" : ""} 
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Fly-to-cart animation
+  const handleCompareClick = useCallback(() => {
+    if (!isInComparison && cardRef.current) {
+      const cardRect = cardRef.current.getBoundingClientRect();
+      const cartElement = document.getElementById('floating-comparison-cart');
+      
+      if (cartElement) {
+        const cartRect = cartElement.getBoundingClientRect();
+        
+        // Create flying clone
+        const clone = document.createElement('div');
+        clone.className = 'fixed pointer-events-none z-[9999] rounded-lg overflow-hidden shadow-lg';
+        clone.style.cssText = `
+          top: ${cardRect.top}px;
+          left: ${cardRect.left}px;
+          width: ${cardRect.width}px;
+          height: ${cardRect.height}px;
+          --fly-x: ${cartRect.left - cardRect.left}px;
+          --fly-y: ${cartRect.top - cardRect.top}px;
+        `;
+        
+        // Clone card content as image
+        const logoSrc = EMPRESA_LOGOS[plan.empresa] 
+          ? `/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`
+          : null;
+        
+        clone.innerHTML = `
+          <div class="bg-card w-full h-full flex items-center justify-center p-4">
+            ${logoSrc ? `<img src="${logoSrc}" alt="${plan.empresa}" class="h-12 w-auto object-contain" />` : `<span class="text-lg font-bold">${plan.empresa}</span>`}
+          </div>
+        `;
+        
+        document.body.appendChild(clone);
+        
+        // Trigger animation
+        requestAnimationFrame(() => {
+          clone.style.animation = 'fly-to-cart 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+        });
+        
+        // Remove clone after animation
+        setTimeout(() => {
+          clone.remove();
+        }, 600);
+      }
+    }
+    
+    onToggleComparison(plan._id);
+  }, [isInComparison, plan._id, plan.empresa, onToggleComparison]);
+
+  return <Card ref={cardRef} className={`card-commercial bg-card relative ${viewMode === "list" ? "flex flex-col md:flex-row" : ""} 
         ${isBestValue && !hasWarning ? "card-best-value" : ""} 
         ${hasWarning ? "card-warning" : ""}
         overflow-hidden border-border/50`}>
@@ -149,7 +200,7 @@ export const PlanCard = ({
           </div>
         </CardContent>
 
-        <CardFooter className="flex flex-col gap-2 pt-3 pb-3 border-t border-border/30">
+        <CardFooter className="flex flex-col gap-2 pt-3 pb-4 border-t border-border/30 relative">
           {/* CTA Button */}
           <Button className="w-full h-10 text-sm font-bold bg-success hover:bg-success/90 text-success-foreground" onClick={() => onOpenDetails(plan)}>
             ✅ Contratar {plan.name}
@@ -158,6 +209,26 @@ export const PlanCard = ({
           {/* View providers link */}
           <button onClick={() => onOpenDetails(plan)} className="text-xs text-primary hover:underline font-medium">
             Ver todos los Prestadores
+          </button>
+
+          {/* Compare button - bottom left corner */}
+          <button 
+            onClick={handleCompareClick}
+            className={`absolute bottom-3 left-3 flex items-center gap-1.5 text-xs transition-all duration-200 
+              ${isInComparison 
+                ? 'text-success font-medium' 
+                : 'text-muted-foreground hover:text-foreground'
+              }`}
+          >
+            {isInComparison ? (
+              <>
+                <Check className="h-3.5 w-3.5 animate-pop-in" />
+                <span>Agregado</span>
+              </>
+            ) : (
+              <span>Comparar</span>
+            )}
+            <ShoppingCart className={`h-3.5 w-3.5 ml-0.5 ${isInComparison ? 'text-success' : ''}`} />
           </button>
         </CardFooter>
       </div>

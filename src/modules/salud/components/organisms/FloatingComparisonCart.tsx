@@ -36,7 +36,7 @@ export const FloatingComparisonCart = ({
   };
 
   return (
-    <div className={cn("fixed top-20 right-4 z-50", className)}>
+    <div id="floating-comparison-cart" className={cn("fixed top-20 right-4 z-50", className)}>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
