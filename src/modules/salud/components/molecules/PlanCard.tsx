@@ -121,19 +121,8 @@ export const PlanCard = ({
         <CardContent className="flex-1 py-2 space-y-3">
           {/* Clinical Coverage Section */}
           <div className="space-y-1.5">
-            <p className="text-xs font-bold text-foreground flex items-center gap-1.5">🏥 OBERTURA CLÍNICA</p>
-            <ul className="space-y-1">
-              {KEY_CLINICS.map(clinic => {
-              const included = includedKeyClinics.includes(clinic);
-              const isHighlighted = highlightClinic && clinic.toLowerCase().includes(highlightClinic.toLowerCase());
-              return <li key={clinic} className={`text-xs flex items-center gap-2 ${isHighlighted ? "font-semibold" : ""}`}>
-                    {included ? <Check className="h-3.5 w-3.5 text-success shrink-0" /> : <X className="h-3.5 w-3.5 text-destructive shrink-0" />}
-                    <span className={included ? "text-foreground" : "text-muted-foreground"}>
-                      {clinic} {included ? "(Incluido)" : "(Excluido)"}
-                    </span>
-                  </li>;
-            })}
-            </ul>
+            <p className="text-xs font-bold text-foreground flex items-center gap-1.5">🏥 COBERTURA CLÍNICA</p>
+            
           </div>
 
           {/* Conditions Section */}
