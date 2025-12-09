@@ -101,8 +101,8 @@ export const PlanCard = ({
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
               <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  {EMPRESA_LOGOS[plan.empresa] ? <img src={`/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`} alt={plan.empresa} className="h-6 w-auto object-contain" /> : <span className="text-sm font-semibold text-foreground">{plan.empresa}</span>}
+                <div className="flex justify-center">
+                  {EMPRESA_LOGOS[plan.empresa] ? <img src={`/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`} alt={plan.empresa} className="h-10 w-auto object-contain" /> : <span className="text-sm font-semibold text-foreground">{plan.empresa}</span>}
                   
                 </div>
                 {(plan as any).nombre && <span className="text-sm font-medium text-muted-foreground">
