@@ -3,7 +3,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { HealthPlan } from "@/core/interfaces/plan/planes";
-
 interface PlanCardProps {
   plan: HealthPlan;
   viewMode: "grid" | "list";
@@ -15,13 +14,7 @@ interface PlanCardProps {
 }
 
 // Key clinics to highlight
-const KEY_CLINICS = [
-  "Hospital Italiano",
-  "Clínica Favaloro",
-  "Sanatorio Güemes",
-  "Maternidad Suizo",
-];
-
+const KEY_CLINICS = ["Hospital Italiano", "Clínica Favaloro", "Sanatorio Güemes", "Maternidad Suizo"];
 export const PlanCard = ({
   plan,
   viewMode,
@@ -29,16 +22,13 @@ export const PlanCard = ({
   onToggleComparison,
   onOpenDetails,
   isRecommended = false,
-  highlightClinic,
+  highlightClinic
 }: PlanCardProps) => {
   // Check if plan includes key clinics
-  const includedKeyClinics = KEY_CLINICS.filter(keyClinic => 
-    plan.clinicas?.some(c => c.entity?.toLowerCase().includes(keyClinic.toLowerCase()))
-  );
-  
+  const includedKeyClinics = KEY_CLINICS.filter(keyClinic => plan.clinicas?.some(c => c.entity?.toLowerCase().includes(keyClinic.toLowerCase())));
+
   // Check if plan is missing the highlighted clinic
-  const missingHighlightClinic = highlightClinic && 
-    !plan.clinicas?.some(c => c.entity?.toLowerCase().includes(highlightClinic.toLowerCase()));
+  const missingHighlightClinic = highlightClinic && !plan.clinicas?.some(c => c.entity?.toLowerCase().includes(highlightClinic.toLowerCase()));
 
   // Determine card status
   const isBestValue = isRecommended || plan.rating >= 4.5;
@@ -77,22 +67,15 @@ export const PlanCard = ({
     }
     return null;
   };
-
   const banner = getBannerConfig();
-
-  return (
-    <Card 
-      className={`card-commercial bg-card ${viewMode === "list" ? "flex flex-col md:flex-row" : ""} 
+  return <Card className={`card-commercial bg-card ${viewMode === "list" ? "flex flex-col md:flex-row" : ""} 
         ${isBestValue && !hasWarning ? "card-best-value" : ""} 
         ${hasWarning ? "card-warning" : ""}
-        overflow-hidden border-border/50`}
-    >
+        overflow-hidden border-border/50`}>
       {/* Status Banner */}
-      {banner && (
-        <div className={`py-1.5 px-3 text-xs font-bold text-center ${banner.className}`}>
+      {banner && <div className={`py-1.5 px-3 text-xs font-bold text-center ${banner.className}`}>
           {banner.icon} {banner.text}
-        </div>
-      )}
+        </div>}
 
       <div className="flex-1 flex flex-col">
         {/* Header with Plan Name and Rating */}
@@ -111,13 +94,7 @@ export const PlanCard = ({
                 Cartilla: {plan.linea}
               </p>
             </div>
-            <Button 
-              variant={isInComparison ? "default" : "outline"}
-              size="sm"
-              onClick={() => onToggleComparison(plan._id)}
-              className={`flex items-center gap-1 h-7 px-2 shrink-0 ${isInComparison ? "bg-primary" : ""}`}
-              title={isInComparison ? "Remover de comparación" : "Agregar a comparación"}
-            >
+            <Button variant={isInComparison ? "default" : "outline"} size="sm" onClick={() => onToggleComparison(plan._id)} className={`flex items-center gap-1 h-7 px-2 shrink-0 ${isInComparison ? "bg-primary" : ""}`} title={isInComparison ? "Remover de comparación" : "Agregar a comparación"}>
               {isInComparison ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
               <span className="text-xs">{isInComparison ? "Quitar" : "Comparar"}</span>
             </Button>
@@ -127,29 +104,18 @@ export const PlanCard = ({
         <CardContent className="flex-1 py-2 space-y-3">
           {/* Clinical Coverage Section */}
           <div className="space-y-1.5">
-            <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              🏥 COBERTURA CLÍNICA
-            </p>
+            <p className="text-xs font-bold text-foreground flex items-center gap-1.5">🏥 OBERTURA CLÍNICA</p>
             <ul className="space-y-1">
-              {KEY_CLINICS.map((clinic) => {
-                const included = includedKeyClinics.includes(clinic);
-                const isHighlighted = highlightClinic && clinic.toLowerCase().includes(highlightClinic.toLowerCase());
-                return (
-                  <li 
-                    key={clinic}
-                    className={`text-xs flex items-center gap-2 ${isHighlighted ? "font-semibold" : ""}`}
-                  >
-                    {included ? (
-                      <Check className="h-3.5 w-3.5 text-success shrink-0" />
-                    ) : (
-                      <X className="h-3.5 w-3.5 text-destructive shrink-0" />
-                    )}
+              {KEY_CLINICS.map(clinic => {
+              const included = includedKeyClinics.includes(clinic);
+              const isHighlighted = highlightClinic && clinic.toLowerCase().includes(highlightClinic.toLowerCase());
+              return <li key={clinic} className={`text-xs flex items-center gap-2 ${isHighlighted ? "font-semibold" : ""}`}>
+                    {included ? <Check className="h-3.5 w-3.5 text-success shrink-0" /> : <X className="h-3.5 w-3.5 text-destructive shrink-0" />}
                     <span className={included ? "text-foreground" : "text-muted-foreground"}>
                       {clinic} {included ? "(Incluido)" : "(Excluido)"}
                     </span>
-                  </li>
-                );
-              })}
+                  </li>;
+            })}
             </ul>
           </div>
 
@@ -159,15 +125,13 @@ export const PlanCard = ({
               📋 CONDICIONES
             </p>
             <ul className="space-y-1">
-              {plan.attributes?.slice(0, 2).map((attr, idx) => (
-                <li key={`${plan._id}-attr-${idx}`} className="text-xs flex items-start gap-2">
+              {plan.attributes?.slice(0, 2).map((attr, idx) => <li key={`${plan._id}-attr-${idx}`} className="text-xs flex items-start gap-2">
                   <span className="text-muted-foreground">•</span>
                   <span>
                     <span className="font-medium text-foreground">{attr.name}:</span>{" "}
                     <span className="text-muted-foreground">{attr.value_name}</span>
                   </span>
-                </li>
-              ))}
+                </li>)}
               <li className="text-xs flex items-start gap-2">
                 <span className="text-muted-foreground">•</span>
                 <span>
@@ -181,22 +145,15 @@ export const PlanCard = ({
 
         <CardFooter className="flex flex-col gap-2 pt-3 pb-3 border-t border-border/30">
           {/* CTA Button */}
-          <Button 
-            className="w-full h-10 text-sm font-bold bg-success hover:bg-success/90 text-success-foreground"
-            onClick={() => onOpenDetails(plan)}
-          >
+          <Button className="w-full h-10 text-sm font-bold bg-success hover:bg-success/90 text-success-foreground" onClick={() => onOpenDetails(plan)}>
             ✅ Contratar {plan.name}
           </Button>
           
           {/* View providers link */}
-          <button 
-            onClick={() => onOpenDetails(plan)}
-            className="text-xs text-primary hover:underline font-medium"
-          >
+          <button onClick={() => onOpenDetails(plan)} className="text-xs text-primary hover:underline font-medium">
             Ver todos los Prestadores
           </button>
         </CardFooter>
       </div>
-    </Card>
-  );
+    </Card>;
 };
