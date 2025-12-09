@@ -116,6 +116,11 @@ export const PlanCard = ({
                     ⭐ {plan.rating}
                   </Badge>
                 </div>
+                {(plan as any).nombre && (
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {(plan as any).nombre}
+                  </span>
+                )}
                 <CardTitle className="text-lg font-bold text-foreground leading-tight">
                   {plan.name}
                 </CardTitle>
