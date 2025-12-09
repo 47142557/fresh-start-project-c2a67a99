@@ -26,11 +26,22 @@ export const PlanDetailsModal = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-2xl">{plan.name}</DialogTitle>
-          <DialogDescription className="text-base">
-            {plan.empresa} - {plan.linea}
-          </DialogDescription>
+        <DialogHeader className="flex flex-row items-center gap-4">
+          {plan.images && plan.images[0] && (
+            <img
+              src={`/${plan.images[0].url}`}
+              alt={plan.empresa}
+              className="h-10 w-auto object-contain"
+            />
+          )}
+          <div>
+            <DialogTitle className="text-2xl">
+              {plan.name.replace(new RegExp(`^${plan.empresa.replace(/[- ]/g, '[- ]?')}[- ]?`, 'i'), '').trim()}
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              {plan.linea}
+            </DialogDescription>
+          </div>
         </DialogHeader>
         
         <Tabs defaultValue="info" className="flex-1 flex flex-col overflow-hidden mt-4">
