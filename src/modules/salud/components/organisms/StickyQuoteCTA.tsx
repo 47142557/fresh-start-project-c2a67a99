@@ -7,7 +7,7 @@ interface StickyQuoteCTAProps {
 
 export const StickyQuoteCTA = ({ onClick }: StickyQuoteCTAProps) => {
   return (
-    <div className="sticky top-0 z-40 w-full bg-primary shadow-lg">
+    <div className="sticky top-16 z-40 w-full bg-primary shadow-lg">
       <div className="container mx-auto px-4">
         <Button
           onClick={onClick}
