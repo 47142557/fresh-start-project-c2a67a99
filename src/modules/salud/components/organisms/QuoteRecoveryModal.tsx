@@ -36,26 +36,29 @@ const QuoteRecoveryModal: React.FC<QuoteRecoveryModalProps> = ({
   const groupDescription = getGroupDescription(savedFormData.group);
   const familySummary = getFamilySummary(savedFormData);
 
+  // Show loading immediately when modal opens
+  const showLoadingState = open && isLoading;
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <div className="flex items-center gap-3 mb-2">
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-              {isLoading ? (
+              {showLoadingState ? (
                 <Loader2 className="h-6 w-6 text-primary animate-spin" />
               ) : (
                 <Users className="h-6 w-6 text-primary" />
               )}
             </div>
             <AlertDialogTitle className="text-xl">
-              Cotización encontrada
+              {showLoadingState ? 'Actualizando cotización...' : 'Cotización encontrada'}
             </AlertDialogTitle>
           </div>
           <AlertDialogDescription className="text-left space-y-4">
             <p className="text-muted-foreground">
-              {isLoading 
-                ? 'Cargando los datos de tu cotización anterior...'
+              {showLoadingState 
+                ? 'Estamos actualizando los precios con los datos de tu cotización anterior...'
                 : 'Encontramos una cotización guardada de tu última visita. ¿Querés continuar con esos datos?'
               }
             </p>
@@ -65,8 +68,8 @@ const QuoteRecoveryModal: React.FC<QuoteRecoveryModalProps> = ({
                 <Badge variant="secondary" className="font-medium">
                   {groupDescription}
                 </Badge>
-                {isLoading && (
-                  <span className="text-xs text-muted-foreground">Actualizando precios...</span>
+                {showLoadingState && (
+                  <span className="text-xs text-muted-foreground animate-pulse">Actualizando precios...</span>
                 )}
               </div>
               
@@ -92,7 +95,7 @@ const QuoteRecoveryModal: React.FC<QuoteRecoveryModalProps> = ({
           <AlertDialogCancel 
             onClick={onStartNew}
             className="flex items-center gap-2"
-            disabled={isLoading}
+            disabled={showLoadingState}
           >
             <Plus className="h-4 w-4" />
             Iniciar una nueva
@@ -100,14 +103,14 @@ const QuoteRecoveryModal: React.FC<QuoteRecoveryModalProps> = ({
           <AlertDialogAction 
             onClick={onRecover}
             className="flex items-center gap-2 bg-primary hover:bg-primary/90"
-            disabled={isLoading}
+            disabled={showLoadingState}
           >
-            {isLoading ? (
+            {showLoadingState ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               <RefreshCw className="h-4 w-4" />
             )}
-            {isLoading ? 'Cargando...' : 'Continuar y actualizar'}
+            {showLoadingState ? 'Cargando...' : 'Continuar y actualizar'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
