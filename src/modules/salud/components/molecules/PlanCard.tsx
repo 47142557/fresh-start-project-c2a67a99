@@ -101,7 +101,7 @@ export const PlanCard = ({
         <CardHeader className="pb-2 pt-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   {EMPRESA_LOGOS[plan.empresa] ? (
                     <img 
@@ -112,13 +112,13 @@ export const PlanCard = ({
                   ) : (
                     <span className="text-sm font-semibold text-foreground">{plan.empresa}</span>
                   )}
+                  <Badge className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs bg-cta-highlight text-cta-highlight-foreground font-bold shrink-0">
+                    ⭐ {plan.rating}
+                  </Badge>
                 </div>
                 <CardTitle className="text-lg font-bold text-foreground leading-tight">
                   {plan.name}
                 </CardTitle>
-                <Badge className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs bg-cta-highlight text-cta-highlight-foreground font-bold shrink-0">
-                  ⭐ {plan.rating}
-                </Badge>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Cartilla: {plan.linea}
