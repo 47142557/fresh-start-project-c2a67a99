@@ -6,7 +6,7 @@ import { type Clinica } from "@/core/interfaces/plan/clinicas";
 import { Helmet } from "react-helmet-async";
 import Layout from "@/layouts/Layout";
 import FormQuote from "@/modules/salud/components/organisms/FormQuote";
-import { FloatingQuoteButton } from "@/modules/salud/components/molecules/FloatingQuoteButton";
+import { StickyQuoteCTA } from "@/modules/salud/components/organisms/StickyQuoteCTA";
 import { FloatingComparisonCart } from "@/modules/salud/components/organisms/FloatingComparisonCart";
 import { PlanDetailsModal } from "@/modules/salud/components/organisms/PlanDetailsModal";
 import QuoteRecoveryModal from "@/modules/salud/components/organisms/QuoteRecoveryModal";
@@ -238,7 +238,7 @@ const ResultadosPage = () => {
         <meta property="og:url" content="https://tudominio.com/resultados" />
       </Helmet>
 
-      <FloatingQuoteButton onClick={() => setFormQuoteOpen(true)} />
+      
       
       <Dialog open={formQuoteOpen} onOpenChange={setFormQuoteOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
@@ -260,6 +260,8 @@ const ResultadosPage = () => {
         providersCount={providers.length}
         onWhatsAppClick={handleWhatsAppClick}
       />
+
+      <StickyQuoteCTA onClick={() => setFormQuoteOpen(true)} />
 
       <QuickNavBar items={quickNavItems} />
 
