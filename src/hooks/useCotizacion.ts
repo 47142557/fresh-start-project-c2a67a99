@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { QuoteFormData } from '@/core/interfaces/plan/quoteFormData';
 import { submitQuote } from '@/services/health.service';
 import {  type HealthPlan } from '@/core/interfaces/plan/planes';
 
 import { initialFormData } from '@/data/initialFormData';
 const STORAGE_KEY = 'last_cotizacion_form';
-
-
+const QUOTE_CODE_KEY = 'quote_code';
 
 interface UseCotizacionReturn {
   formData: QuoteFormData;
@@ -26,9 +26,14 @@ interface UseCotizacionReturn {
   isLoading: boolean;
   fetchCotizacion: (formData?: QuoteFormData) => Promise<void>;
   hasFetched: boolean;
+  // Pre-fetched data when recovery modal shows
+  recoveryDataLoading: boolean;
+  quoteCode: string | null;
+  setQuoteCode: (code: string | null) => void;
 }
 
 export const useCotizacion = (): UseCotizacionReturn => {
+  const location = useLocation();
   const [formData, setFormDataState] = useState<QuoteFormData>(initialFormData);
   const [savedFormData, setSavedFormData] = useState<QuoteFormData | null>(null);
   const [showRecoveryModal, setShowRecoveryModal] = useState(false);
@@ -39,9 +44,19 @@ export const useCotizacion = (): UseCotizacionReturn => {
   const [cotizacionData, setCotizacionData] = useState<HealthPlan[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
+  const [recoveryDataLoading, setRecoveryDataLoading] = useState(false);
+  const [quoteCode, setQuoteCode] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(QUOTE_CODE_KEY);
+    } catch {
+      return null;
+    }
+  });
   
   // Ref to track if we should auto-fetch
   const shouldAutoFetch = useRef(true);
+  // Track if coming from home page
+  const cameFromHome = useRef(false);
 
   // Fetch cotización from API
 const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
@@ -79,19 +94,32 @@ const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
         setIsLoading(false);
     }
 }, [formData]); // Dependencies remain the same
-  // Check localStorage on mount
+  // Check localStorage on mount - only show recovery modal when coming from home
   useEffect(() => {
     if (hasCheckedStorage) return;
     
+    // Check if user navigated from home page
+    const referrer = document.referrer;
+    const isFromHome = referrer.includes('/') && !referrer.includes('/resultados') && 
+                       !referrer.includes('/comparar') || 
+                       location.state?.fromHome === true;
+    cameFromHome.current = isFromHome;
+    
     try {
       const storedForm = localStorage.getItem(STORAGE_KEY);
-      if (storedForm) {
+      if (storedForm && isFromHome) {
         const parsedForm = JSON.parse(storedForm) as QuoteFormData;
         // Validate that the stored form has essential data
         if (parsedForm.group !== null && parsedForm.group !== undefined) {
           setSavedFormData(parsedForm);
           setShowRecoveryModal(true);
-          shouldAutoFetch.current = false; // Don't auto-fetch, wait for user decision
+          shouldAutoFetch.current = false;
+          
+          // Auto-fetch with saved data immediately when modal opens
+          setRecoveryDataLoading(true);
+          fetchCotizacion(parsedForm).finally(() => {
+            setRecoveryDataLoading(false);
+          });
         }
       }
     } catch (error) {
@@ -99,7 +127,7 @@ const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
       localStorage.removeItem(STORAGE_KEY);
     }
     setHasCheckedStorage(true);
-  }, [hasCheckedStorage]);
+  }, [hasCheckedStorage, location.state]);
 
   // Auto-fetch on mount if no saved form
   useEffect(() => {
@@ -147,15 +175,14 @@ const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
     });
   }, [saveFormToStorage]);
 
-  // Recover saved form and fetch updated cotización
+  // Recover saved form - data already fetched when modal opened
   const handleRecoverForm = useCallback(() => {
     if (savedFormData) {
       setFormDataState(savedFormData);
       setShowRecoveryModal(false);
-      // Fetch with recovered form data
-      fetchCotizacion(savedFormData);
+      // Data already pre-fetched, no need to fetch again
     }
-  }, [savedFormData, fetchCotizacion]);
+  }, [savedFormData]);
 
   // Start with new form and fetch initial cotización
   const handleStartNew = useCallback(() => {
@@ -165,6 +192,16 @@ const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
     // Fetch with initial form data
     fetchCotizacion(initialFormData);
   }, [clearStoredForm, fetchCotizacion]);
+  
+  // Save quote code to localStorage
+  const handleSetQuoteCode = useCallback((code: string | null) => {
+    setQuoteCode(code);
+    if (code) {
+      localStorage.setItem(QUOTE_CODE_KEY, code);
+    } else {
+      localStorage.removeItem(QUOTE_CODE_KEY);
+    }
+  }, []);
 
   return {
     formData,
@@ -183,7 +220,10 @@ const fetchCotizacion = useCallback(async (formDataToUse?: QuoteFormData) => {
     cotizacionData,
     isLoading,
     fetchCotizacion,
-    hasFetched
+    hasFetched,
+    recoveryDataLoading,
+    quoteCode,
+    setQuoteCode: handleSetQuoteCode
   };
 };
 

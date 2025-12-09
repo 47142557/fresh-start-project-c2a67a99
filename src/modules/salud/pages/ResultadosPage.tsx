@@ -60,7 +60,8 @@ const ResultadosPage = () => {
     handleRecoverForm,
     handleStartNew,
     cotizacionData,
-    isLoading
+    isLoading,
+    recoveryDataLoading
   } = useCotizacion();
 
   useEffect(() => {
@@ -242,7 +243,7 @@ const ResultadosPage = () => {
       <Dialog open={formQuoteOpen} onOpenChange={setFormQuoteOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0">
           <div className="w-full h-full">
-            <FormQuote />
+            <FormQuote onClose={() => setFormQuoteOpen(false)} />
           </div>
         </DialogContent>
       </Dialog>
@@ -324,6 +325,7 @@ const ResultadosPage = () => {
         savedFormData={savedFormData}
         onRecover={handleRecoverForm}
         onStartNew={handleStartNew}
+        isLoading={recoveryDataLoading}
       />
     </Layout>
   );

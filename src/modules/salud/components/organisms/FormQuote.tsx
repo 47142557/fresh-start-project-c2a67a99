@@ -58,7 +58,11 @@ const MessageSquareIcon = (props: SVGProps<SVGSVGElement>) => (
 
 const PERSONAL_DATA_STORAGE_KEY = 'visitor_personal_data';
 
-const FormQuote = () => {
+interface FormQuoteProps {
+  onClose?: () => void;
+}
+
+const FormQuote: React.FC<FormQuoteProps> = ({ onClose }) => {
   const { toast } = useToast();
   // --- State Variables ---
   const [activeStep, setActiveStep] = useState(1);
@@ -72,6 +76,7 @@ const FormQuote = () => {
   const [contactoType, setContactoType] = useState<string | null>(null); // 'phone' or 'whatsapp'
   const [formData, setFormData] = useState<QuoteFormData>(initialFormData);
   const [hasStoredPersonalData, setHasStoredPersonalData] = useState(false);
+  const [isEditingPersonalData, setIsEditingPersonalData] = useState(false);
 
   // --- Refs for continuous increment/decrement ---
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -289,12 +294,28 @@ const FormQuote = () => {
            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pd.email);
   }, [formData.personalData]);
 
+  // Mask email: show first 2 chars, mask until @, show domain
+  const maskEmail = (email: string): string => {
+    const atIndex = email.indexOf('@');
+    if (atIndex <= 2) return email;
+    const firstPart = email.substring(0, 2);
+    const domain = email.substring(atIndex);
+    const maskedPart = '*'.repeat(Math.min(atIndex - 2, 6));
+    return `${firstPart}${maskedPart}${domain}`;
+  };
+
+  // Mask phone: show last 4 digits
+  const maskPhone = (phone: string): string => {
+    if (phone.length <= 4) return phone;
+    const masked = '*'.repeat(phone.length - 4);
+    return `${masked}${phone.slice(-4)}`;
+  };
+
   const verCotizacion = () => {
     if (isPersonalDataValid) {
       setCotizacionVisible(true);
     } else {
       console.error('Por favor, completa todos los campos personales correctamente.');
-      // In a real app, you'd show a visible error message here.
     }
   };
 
@@ -302,6 +323,13 @@ const FormQuote = () => {
     setContactoType(type);
     updatePersonalData('medioContacto', type);
     submitFormManually();
+    
+    // Auto-close after 3 seconds
+    setTimeout(() => {
+      if (onClose) {
+        onClose();
+      }
+    }, 3000);
   };
 
   const submitFormManually = async () => {
@@ -597,21 +625,23 @@ const FormQuote = () => {
       <div className="main-container w-full p-6 sm:p-8 bg-background">
         <h1 style={{ color: PRIMARY_COLOR }} className="text-2xl font-bold text-center mb-8">Cotizador de Planes</h1>
 
-        {/* Progress/Step Indicator */}
-        <div className="flex justify-between text-xs sm:text-sm font-semibold mb-8">
-          <div className="text-center w-1/3">
-            <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(1)}`}>1</div>
-            <span style={{ color: activeStep === 1 ? PRIMARY_COLOR : '' }} className={activeStep === 1 ? 'text-blue-700' : 'text-gray-500'}>Grupo Familiar</span>
+        {/* Progress/Step Indicator - Hide when cotizacion is visible */}
+        {!cotizacionVisible && (
+          <div className="flex justify-between text-xs sm:text-sm font-semibold mb-8">
+            <div className="text-center w-1/3">
+              <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(1)}`}>1</div>
+              <span style={{ color: activeStep === 1 ? PRIMARY_COLOR : '' }} className={activeStep === 1 ? 'text-blue-700' : 'text-gray-500'}>Grupo Familiar</span>
+            </div>
+            <div className="text-center w-1/3">
+              <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(2)}`}>2</div>
+              <span style={{ color: activeStep === 2 ? PRIMARY_COLOR : '' }} className={activeStep === 2 ? 'text-blue-700' : 'text-gray-500'}>Forma de Ingreso</span>
+            </div>
+            <div className="text-center w-1/3">
+              <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(3)}`}>3</div>
+              <span style={{ color: activeStep === 3 ? PRIMARY_COLOR : '' }} className={activeStep === 3 ? 'text-blue-700' : 'text-gray-500'}>Datos Personales</span>
+            </div>
           </div>
-          <div className="text-center w-1/3">
-            <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(2)}`}>2</div>
-            <span style={{ color: activeStep === 2 ? PRIMARY_COLOR : '' }} className={activeStep === 2 ? 'text-blue-700' : 'text-gray-500'}>Forma de Ingreso</span>
-          </div>
-          <div className="text-center w-1/3">
-            <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(3)}`}>3</div>
-            <span style={{ color: activeStep === 3 ? PRIMARY_COLOR : '' }} className={activeStep === 3 ? 'text-blue-700' : 'text-gray-500'}>Datos Personales</span>
-          </div>
-        </div>
+        )}
 
         {/* Main Form Content (Using standard HTML form, managing state via React) */}
         <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
@@ -886,58 +916,88 @@ const FormQuote = () => {
           {/* Step 3: Datos Personales & Contacto */}
           {activeStep === 3 && (
             <div className="step-content">
-              <h2 className="text-lg font-semibold mb-6 text-gray-700">3. Completa tus Datos Personales</h2>
+              {/* Hide step title when cotizacion is visible */}
+              {!cotizacionVisible && (
+                <h2 className="text-lg font-semibold mb-6 text-gray-700">3. Completa tus Datos Personales</h2>
+              )}
               
               {!cotizacionVisible ? (
                 // Personal Data Form
                 <div className="flex flex-col gap-4">
-                  <div className="form-group">
-                    <label htmlFor="name">Nombre completo</label>
-                    <input
-                      id="name"
-                      type="text"
-                      value={formData.personalData.name}
-                      onChange={(e) => updatePersonalData('name', e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="email">Email</label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={formData.personalData.email}
-                      onChange={(e) => updatePersonalData('email', e.target.value)}
-                      required
-                    />
-                    {!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.personalData.email) && formData.personalData.email.length > 0 && (
-                      <div className="error"><span>Email inválido.</span></div>
-                    )}
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="phone">Celular</label>
-                    <input
-                      id="phone"
-                      type="text"
-                      value={formData.personalData.phone}
-                      onChange={(e) => updatePersonalData('phone', e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="flex justify-between mt-6">
-                    <button type="button" onClick={goToPrevStep} className="px-6 py-3 bg-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-400 transition">
-                      Atrás
-                    </button>
-                    <button
-                      type="button"
-                      onClick={verCotizacion}
-                      disabled={!isPersonalDataValid}
-                      className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 disabled:bg-gray-400 transition"
-                    >
-                      Ver Cotización
-                    </button>
-                  </div>
+                  {/* Show masked data if stored and not editing */}
+                  {hasStoredPersonalData && !isEditingPersonalData ? (
+                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <div className="space-y-2 mb-4">
+                        <p className="text-sm"><strong>Nombre:</strong> {formData.personalData.name}</p>
+                        <p className="text-sm"><strong>Email:</strong> {maskEmail(formData.personalData.email)}</p>
+                        <p className="text-sm"><strong>Celular:</strong> {maskPhone(formData.personalData.phone)}</p>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <button 
+                          type="button" 
+                          onClick={() => setIsEditingPersonalData(true)}
+                          className="text-sm text-blue-600 hover:underline"
+                        >
+                          Editar datos de contacto
+                        </button>
+                        <button
+                          type="button"
+                          onClick={verCotizacion}
+                          className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 transition"
+                        >
+                          Ver Cotización
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Editable form
+                    <>
+                      <div className="form-group">
+                        <label htmlFor="name">Nombre completo</label>
+                        <input
+                          id="name"
+                          type="text"
+                          value={formData.personalData.name}
+                          onChange={(e) => updatePersonalData('name', e.target.value)}
+                          required
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="email">Email</label>
+                        <input
+                          id="email"
+                          type="email"
+                          value={formData.personalData.email}
+                          onChange={(e) => updatePersonalData('email', e.target.value)}
+                          required
+                        />
+                        {!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.personalData.email) && formData.personalData.email.length > 0 && (
+                          <div className="error"><span>Email inválido.</span></div>
+                        )}
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="phone">Celular</label>
+                        <input
+                          id="phone"
+                          type="text"
+                          value={formData.personalData.phone}
+                          onChange={(e) => updatePersonalData('phone', e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="flex justify-end mt-6">
+                        <button
+                          type="button"
+                          onClick={verCotizacion}
+                          disabled={!isPersonalDataValid}
+                          className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 disabled:bg-gray-400 transition"
+                        >
+                          Ver Cotización
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
                 // Contact Selection or Thank You
@@ -970,28 +1030,9 @@ const FormQuote = () => {
                         <span>Estaremos enviandole un mensaje por WhatsApp!</span>
                       )}
                     </div>
-                    <div className="mt-4 text-sm text-gray-500 text-left p-3 border-t border-gray-200">
-                      <p className='font-bold mb-1'>Datos enviados:</p>
-                      <ul className='list-disc list-inside space-y-0.5'>
-                        <li>Grupo: {selectedGroup}</li>
-                        <li>Titular: {formData.edad_1} años</li>
-                        <li>Pareja: {(selectedGroup === 3 || selectedGroup === 4) ? `${formData.edad_2} años` : 'N/A'}</li>
-                        <li>Hijos: {formData.numkids}</li>
-                        <li>Ingreso: {formData.tipo === 'D' ? `$ ${formattedSueldo} (Aportes)` : 'Privado'}</li>
-                        <li>Contacto: {formData.personalData.name} | {formData.personalData.email}</li>
-                      </ul>
-                    </div>
+                    <p className="text-sm text-gray-500 mt-4">Este diálogo se cerrará automáticamente...</p>
                   </div>
                 )
-              )}
-
-              {/* Back button for Step 3, visible only if not finalized */}
-              {activeStep === 3 && !contactoType && (
-                <div className="flex justify-start mt-6">
-                  <button type="button" onClick={goToPrevStep} className="px-6 py-3 bg-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-400 transition">
-                    Atrás
-                  </button>
-                </div>
               )}
             </div>
           )}
