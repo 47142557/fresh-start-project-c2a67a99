@@ -76,7 +76,7 @@ export const PlanCard = ({
           <img
             src={`/${plan.images[0].url}`}
             alt={plan.empresa}
-            className="max-h-12 max-w-full object-contain"
+            className="max-h-6 max-w-full object-contain"
           />
         </div>
       )}
