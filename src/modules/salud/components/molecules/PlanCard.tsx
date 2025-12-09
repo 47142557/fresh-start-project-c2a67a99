@@ -3,7 +3,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { HealthPlan } from "@/core/interfaces/plan/planes";
-
 interface PlanCardProps {
   plan: HealthPlan;
   viewMode: "grid" | "list";
@@ -29,7 +28,7 @@ const EMPRESA_LOGOS: Record<string, string> = {
   "Hominis": "hominis.png",
   "Salud Central": "saludcentral.webp",
   "Doctored": "doctored.webp",
-  "Premedic": "premedic.webp",
+  "Premedic": "premedic.webp"
 };
 
 // Key clinics to highlight
@@ -103,36 +102,19 @@ export const PlanCard = ({
             <div className="flex-1 min-w-0">
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
-                  {EMPRESA_LOGOS[plan.empresa] ? (
-                    <img 
-                      src={`/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`} 
-                      alt={plan.empresa} 
-                      className="h-6 w-auto object-contain"
-                    />
-                  ) : (
-                    <span className="text-sm font-semibold text-foreground">{plan.empresa}</span>
-                  )}
-                  <Badge className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs bg-cta-highlight text-cta-highlight-foreground font-bold shrink-0">
-                    ⭐ {plan.rating}
-                  </Badge>
+                  {EMPRESA_LOGOS[plan.empresa] ? <img src={`/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`} alt={plan.empresa} className="h-6 w-auto object-contain" /> : <span className="text-sm font-semibold text-foreground">{plan.empresa}</span>}
+                  
                 </div>
-                {(plan as any).nombre && (
-                  <span className="text-sm font-medium text-muted-foreground">
+                {(plan as any).nombre && <span className="text-sm font-medium text-muted-foreground">
                     {(plan as any).nombre}
-                  </span>
-                )}
-                <CardTitle className="text-lg font-bold text-foreground leading-tight">
-                  {plan.name.replace(new RegExp(`^${plan.empresa.replace(/[- ]/g, '[- ]?')}[- ]?`, 'i'), '').trim()}
-                </CardTitle>
+                  </span>}
+                
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
                 Cartilla: {plan.linea}
               </p>
             </div>
-            <Button variant={isInComparison ? "default" : "outline"} size="sm" onClick={() => onToggleComparison(plan._id)} className={`flex items-center gap-1 h-7 px-2 shrink-0 ${isInComparison ? "bg-primary" : ""}`} title={isInComparison ? "Remover de comparación" : "Agregar a comparación"}>
-              {isInComparison ? <Minus className="h-3 w-3" /> : <Plus className="h-3 w-3" />}
-              <span className="text-xs">{isInComparison ? "Quitar" : "Comparar"}</span>
-            </Button>
+            
           </div>
         </CardHeader>
 
