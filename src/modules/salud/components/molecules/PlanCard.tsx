@@ -122,7 +122,7 @@ export const PlanCard = ({
                   </span>
                 )}
                 <CardTitle className="text-lg font-bold text-foreground leading-tight">
-                  {plan.name.replace(plan.empresa, '').replace('-', '').trim()}
+                  {plan.name.replace(new RegExp(`^${plan.empresa.replace(/[- ]/g, '[- ]?')}[- ]?`, 'i'), '').trim()}
                 </CardTitle>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
