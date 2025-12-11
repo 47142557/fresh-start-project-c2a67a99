@@ -11,6 +11,7 @@ import { PublicQuotePage } from "./modules/salud/pages/PublicQuotePage";
 import NotFound from "./modules/salud/pages/NotFound";
 import { LoginPage, RegisterPage, ForgotPasswordPage } from "./modules/auth/pages";
 import { StyleGuidePage } from "./modules/styleguide/pages";
+import { ProviderLandingPage } from "@/modules/salud/pages/ProviderLandingPage"; 
 import {
   VendorRegistrationPage,
   VendorDashboardPage,
@@ -28,27 +29,36 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/resultados" element={<ResultadosPage />} />
-            <Route path="/comparar" element={<ComparisonPage />} />
-            {/* Public quote view */}
-            <Route path="/cotizacion/:token" element={<PublicQuotePage />} />
-            {/* Auth routes */}
-            <Route path="/auth/login" element={<LoginPage />} />
-            <Route path="/auth/register" element={<RegisterPage />} />
-            <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-            {/* Vendor routes */}
-            <Route path="/vendedor/registro" element={<VendorRegistrationPage />} />
-            <Route path="/vendedor/dashboard" element={<VendorDashboardPage />} />
-            <Route path="/vendedor/perfil" element={<VendorProfilePage />} />
-            <Route path="/vendedor/cotizaciones" element={<VendorQuotesPage />} />
-            <Route path="/vendedor/marketing" element={<VendorMarketingPage />} />
-            {/* Styleguide */}
-            <Route path="/styleguide" element={<StyleGuidePage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+<Routes>
+  <Route path="/" element={<Index />} />
+  <Route path="/resultados" element={<ResultadosPage />} />
+  <Route path="/comparar" element={<ComparisonPage />} />
+  
+  {/* LANDING PAGES DINÁMICAS (SEO & ADS) */}
+  {/* Esta ruta captura /planes/swiss-medical, /planes/osde, etc. */}
+  <Route path="/planes/:providerId" element={<ProviderLandingPage />} />
+
+  {/* Public quote view */}
+  <Route path="/cotizacion/:token" element={<PublicQuotePage />} />
+  
+  {/* Auth routes */}
+  <Route path="/auth/login" element={<LoginPage />} />
+  <Route path="/auth/register" element={<RegisterPage />} />
+  <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+  
+  {/* Vendor routes */}
+  <Route path="/vendedor/registro" element={<VendorRegistrationPage />} />
+  <Route path="/vendedor/dashboard" element={<VendorDashboardPage />} />
+  <Route path="/vendedor/perfil" element={<VendorProfilePage />} />
+  <Route path="/vendedor/cotizaciones" element={<VendorQuotesPage />} />
+  <Route path="/vendedor/marketing" element={<VendorMarketingPage />} />
+  
+  {/* Styleguide */}
+  <Route path="/styleguide" element={<StyleGuidePage />} />
+  
+  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+  <Route path="*" element={<NotFound />} />
+</Routes>
         </BrowserRouter>
       </TooltipProvider>
     </HelmetProvider>

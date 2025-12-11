@@ -1,62 +1,52 @@
-import { Search, FileCheck, Award } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-const HowItWorks = () => {
+export const HowItWorks = () => {
   return (
-    <section className="py-20 px-4 bg-background">
-      <div className="container mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
-          ¿Cómo funciona?
-        </h2>
-        <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-          En solo tres simples pasos podés encontrar el plan ideal
-        </p>
-        <div className="grid md:grid-cols-3 gap-8">
-          <Card className="text-center">
-            <CardHeader>
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                <Search className="w-8 h-8 text-primary" />
-              </div>
-              <CardTitle>1. Explorá</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                Navegá por todos los planes disponibles y filtrá por precio, cobertura y clínicas
-              </CardDescription>
-            </CardContent>
-          </Card>
+    <section className="py-24 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4">Tu plan ideal en 3 pasos</h2>
+          <p className="text-lg text-slate-500">
+            Olvidate de llamar a 10 lugares distintos. Nosotros hacemos el trabajo duro por vos.
+          </p>
+        </div>
 
-          <Card className="text-center">
-            <CardHeader>
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                <FileCheck className="w-8 h-8 text-primary" />
-              </div>
-              <CardTitle>2. Compará</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                Seleccioná hasta 3 planes y comparalos lado a lado para ver diferencias
-              </CardDescription>
-            </CardContent>
-          </Card>
+        <div className="grid md:grid-cols-3 gap-12 relative">
+          {/* Línea conectora (solo desktop) */}
+          <div className="hidden md:block absolute top-12 left-1/6 right-1/6 h-0.5 bg-slate-100 -z-10"></div>
 
-          <Card className="text-center">
-            <CardHeader>
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                <Award className="w-8 h-8 text-primary" />
-              </div>
-              <CardTitle>3. Elegí</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CardDescription className="text-base">
-                Tomá la mejor decisión con toda la información a tu alcance
-              </CardDescription>
-            </CardContent>
-          </Card>
+          {/* Paso 1 */}
+          <div className="text-center group">
+            <div className="w-24 h-24 bg-teal-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-teal-100 group-hover:scale-110 transition-transform duration-300">
+              <span className="text-4xl font-black text-teal-600">1</span>
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">Completá tus datos</h3>
+            <p className="text-slate-500 leading-relaxed px-4">
+              Ingresá tu edad y zona de residencia para que busquemos las mejores opciones disponibles.
+            </p>
+          </div>
+
+          {/* Paso 2 */}
+          <div className="text-center group">
+            <div className="w-24 h-24 bg-orange-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-orange-100 group-hover:scale-110 transition-transform duration-300">
+              <span className="text-4xl font-black text-orange-500">2</span>
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">Compará opciones</h3>
+            <p className="text-slate-500 leading-relaxed px-4">
+              Analizá precios, cartillas y beneficios lado a lado en nuestra tabla comparativa inteligente.
+            </p>
+          </div>
+
+          {/* Paso 3 */}
+          <div className="text-center group">
+            <div className="w-24 h-24 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm border border-blue-100 group-hover:scale-110 transition-transform duration-300">
+              <span className="text-4xl font-black text-blue-600">3</span>
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">Elegí y Ahorrá</h3>
+            <p className="text-slate-500 leading-relaxed px-4">
+              Seleccioná el plan que más te guste y un asesor te ayudará con el alta 100% digital.
+            </p>
+          </div>
         </div>
       </div>
     </section>
   );
 };
-
-export default HowItWorks;

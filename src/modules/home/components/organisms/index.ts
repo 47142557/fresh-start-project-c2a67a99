@@ -1,5 +1,5 @@
-export { default as HeroSection } from './HeroSection';
-export { default as HowItWorks } from './HowItWorks';
-export { default as LogosGrid } from './LogosGrid';
-export { default as Testimonials } from './Testimonials';
-export { default as FAQ } from './FAQ';
+export * from './HeroSection';
+export * from './HowItWorks';
+export * from './LogosGrid';
+export * from './Testimonials';
+export * from './FAQ';

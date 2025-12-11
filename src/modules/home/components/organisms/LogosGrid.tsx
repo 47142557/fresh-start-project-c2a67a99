@@ -1,33 +1,27 @@
-const providers = [
-  { name: "OSDE", logo: "/assets/images/card-header/osde.png" },
+const BRANDS = [
   { name: "Swiss Medical", logo: "/assets/images/card-header/swissmedical.webp" },
   { name: "Galeno", logo: "/assets/images/card-header/galeno.webp" },
-  { name: "Medifé", logo: "/assets/images/card-header/medife.webp" },
+  { name: "Osde", logo: "/assets/images/card-header/osde.png" },
+  { name: "Sancor", logo: "/assets/images/card-header/sancorsalud.webp" },
   { name: "Omint", logo: "/assets/images/card-header/omint.webp" },
-  { name: "Sancor Salud", logo: "/assets/images/card-header/sancorsalud.webp" },
+  { name: "Medife", logo: "/assets/images/card-header/medife.webp" },
 ];
 
-const LogosGrid = () => {
+export const LogosGrid = () => {
   return (
-    <section className="py-20 px-4 bg-secondary-light">
-      <div className="container mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
-          Prepagas destacadas
-        </h2>
-        <p className="text-center text-muted-foreground mb-12">
-          Trabajamos con las mejores prepagas de Argentina
+    <section className="py-12 bg-slate-50 border-b border-slate-200">
+      <div className="container mx-auto px-4">
+        <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">
+          Trabajamos con las empresas líderes
         </p>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {providers.map((provider) => (
-            <div
-              key={provider.name}
-              className="bg-card rounded-xl p-6 flex items-center justify-center border border-border shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1"
-            >
-              <img
-                src={provider.logo}
-                alt={provider.name}
-                className="max-h-12 max-w-full object-contain"
-              />
+        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+          {BRANDS.map((brand, idx) => (
+            <div key={idx} className="group">
+                <img 
+                    src={brand.logo} 
+                    alt={brand.name} 
+                    className="h-8 md:h-10 object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500 transform group-hover:scale-110" 
+                />
             </div>
           ))}
         </div>
@@ -35,5 +29,3 @@ const LogosGrid = () => {
     </section>
   );
 };
-
-export default LogosGrid;
