@@ -5,7 +5,6 @@ interface AttributeGroupRowProps {
   groupName: string;
   attributeCount: number;
   isCollapsed: boolean;
-  colSpan: number;
   onToggle: () => void;
 }
 
@@ -13,25 +12,20 @@ export const AttributeGroupRow = ({
   groupName, 
   attributeCount, 
   isCollapsed, 
-  colSpan, 
   onToggle 
 }: AttributeGroupRowProps) => (
-  <tr 
-    className="bg-primary/10 border-t border-t-primary/30 cursor-pointer hover:bg-primary/15 transition-colors group-row"
+  <div 
+    className="col-span-full flex items-center gap-2 px-4 py-3 bg-slate-50 border-y border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"
     onClick={onToggle}
   >
-    <td colSpan={colSpan} className="px-3 py-2 font-semibold text-sm text-primary">
-      <div className="flex items-center gap-2">
-        {isCollapsed ? (
-          <ChevronRight className="w-4 h-4" />
-        ) : (
-          <ChevronDown className="w-4 h-4" />
-        )}
-        <span className="uppercase tracking-wide">{groupName}</span>
-        <Badge variant="secondary" className="text-xs ml-2">
-          {attributeCount}
-        </Badge>
-      </div>
-    </td>
-  </tr>
+    {isCollapsed ? (
+      <ChevronRight className="w-4 h-4 text-slate-400" />
+    ) : (
+      <ChevronDown className="w-4 h-4 text-teal-600" />
+    )}
+    <span className="font-bold text-sm text-slate-700 uppercase tracking-wide">{groupName}</span>
+    <Badge variant="secondary" className="text-[10px] bg-white border-slate-200 text-slate-500 ml-2">
+      {attributeCount}
+    </Badge>
+  </div>
 );

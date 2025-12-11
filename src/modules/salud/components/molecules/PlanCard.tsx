@@ -1,8 +1,8 @@
 import { useRef, useCallback } from "react";
-import { Check, ShoppingCart } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Check, ShoppingCart, Scale, Building2, Stethoscope, Plane, BedDouble } from "lucide-react";
+import { Button } from "@/components/ui/button"; 
 import type { HealthPlan } from "@/core/interfaces/plan/planes";
+
 interface PlanCardProps {
   plan: HealthPlan;
   viewMode: "grid" | "list";
@@ -13,7 +13,7 @@ interface PlanCardProps {
   highlightClinic?: string;
 }
 
-// Map empresa names to logo file names
+// Map logos
 const EMPRESA_LOGOS: Record<string, string> = {
   "Swiss Medical": "swissmedical.webp",
   "Swiss-Medical": "swissmedical.webp",
@@ -23,16 +23,14 @@ const EMPRESA_LOGOS: Record<string, string> = {
   "Medife": "medife.webp",
   "Sancor Salud": "sancorsalud.webp",
   "Avalian": "avalian.webp",
-  "Prevención Salud": "prevencion.webp",
-  "Prevencion": "prevencion.webp",
   "Hominis": "hominis.png",
   "Salud Central": "saludcentral.webp",
   "Doctored": "doctored.webp",
   "Premedic": "premedic.webp"
 };
 
-// Key clinics to highlight
-const KEY_CLINICS = ["Hospital Italiano", "Clínica Favaloro", "Sanatorio Güemes", "Maternidad Suizo"];
+const KEY_CLINICS = ["Hospital Italiano", "Clínica Favaloro", "Sanatorio Güemes", "Maternidad Suizo", "Trinidad", "Sanatorio Otamendi"];
+
 export const PlanCard = ({
   plan,
   viewMode,
@@ -42,200 +40,137 @@ export const PlanCard = ({
   isRecommended = false,
   highlightClinic
 }: PlanCardProps) => {
-  // Check if plan includes key clinics
-  const includedKeyClinics = KEY_CLINICS.filter(keyClinic => plan.clinicas?.some(c => c.entity?.toLowerCase().includes(keyClinic.toLowerCase())));
 
-  // Check if plan is missing the highlighted clinic
-  const missingHighlightClinic = highlightClinic && !plan.clinicas?.some(c => c.entity?.toLowerCase().includes(highlightClinic.toLowerCase()));
-
-  // Determine card status
+  const includedKeyClinics = KEY_CLINICS.filter(keyClinic => 
+    plan.clinicas?.some(c => c.entity?.toLowerCase().includes(keyClinic.toLowerCase()))
+  );
+  
   const isBestValue = isRecommended || plan.rating >= 4.5;
-  const hasAllTopClinics = includedKeyClinics.length >= 3;
-  const hasWarning = missingHighlightClinic;
+  const priceFinal = plan.precio || 0;
+  const priceOriginal = (plan as any).priceOriginal || Math.round(priceFinal * 1.22); 
+  const discount = Math.round(((priceOriginal - priceFinal) / priceOriginal) * 100);
 
-  // Get banner type
+  const formatCurrency = (value: number) => 
+    new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 }).format(value);
+
   const getBannerConfig = () => {
-    if (hasWarning) {
-      return {
-        text: `NO INCLUYE ${highlightClinic?.toUpperCase()} (Ver detalles)`,
-        icon: "❌",
-        className: "banner-warning"
-      };
-    }
-    if (isBestValue && highlightClinic) {
-      return {
-        text: `MEJOR VALOR (INCLUYE ${highlightClinic?.toUpperCase()})`,
-        icon: "✅",
-        className: "banner-best"
-      };
-    }
-    if (hasAllTopClinics) {
-      return {
-        text: "INCLUYE TODAS LAS CLÍNICAS TOP",
-        icon: "🏥",
-        className: "banner-info"
-      };
-    }
     if (isBestValue) {
-      return {
-        text: "MEJOR VALOR",
-        icon: "✅",
-        className: "banner-best"
-      };
+      return { text: "MÁS ELEGIDO", className: "bg-teal-600 text-white" };
     }
     return null;
   };
   const banner = getBannerConfig();
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // Fly-to-cart animation
-  const handleCompareClick = useCallback(() => {
-    if (!isInComparison && cardRef.current) {
-      const cardRect = cardRef.current.getBoundingClientRect();
-      const cartElement = document.getElementById('floating-comparison-cart');
-      
-      if (cartElement) {
-        const cartRect = cartElement.getBoundingClientRect();
-        
-        // Create flying clone - smaller version of card
-        const clone = document.createElement('div');
-        clone.className = 'fixed pointer-events-none z-[9999] rounded-xl overflow-hidden';
-        clone.style.cssText = `
-          top: ${cardRect.top + cardRect.height / 2 - 40}px;
-          left: ${cardRect.left + cardRect.width / 2 - 50}px;
-          width: 100px;
-          height: 80px;
-          --fly-x: ${(cartRect.left + cartRect.width / 2) - (cardRect.left + cardRect.width / 2)}px;
-          --fly-y: ${(cartRect.top + cartRect.height / 2) - (cardRect.top + cardRect.height / 2)}px;
-          transform-origin: center center;
-          box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
-        `;
-        
-        // Clone card content as mini card with logo
-        const logoSrc = EMPRESA_LOGOS[plan.empresa] 
-          ? `/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`
-          : null;
-        
-        clone.innerHTML = `
-          <div class="bg-card w-full h-full flex items-center justify-center p-2 border-2 border-primary/30 rounded-xl">
-            ${logoSrc 
-              ? `<img src="${logoSrc}" alt="${plan.empresa}" class="h-10 w-auto object-contain" />` 
-              : `<span class="text-sm font-bold text-foreground">${plan.empresa}</span>`
-            }
-          </div>
-        `;
-        
-        document.body.appendChild(clone);
-        
-        // Trigger animation with slight delay for visual effect
-        requestAnimationFrame(() => {
-          clone.style.animation = 'fly-to-cart 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards';
-        });
-        
-        // Remove clone after animation
-        setTimeout(() => {
-          clone.remove();
-        }, 750);
-      }
-    }
-    
+  const handleCompareClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Aquí puedes mantener tu lógica de animación de vuelo al carrito si la tienes en un hook o contexto
     onToggleComparison(plan._id);
-  }, [isInComparison, plan._id, plan.empresa, onToggleComparison]);
+  }, [isInComparison, plan._id, onToggleComparison]);
 
-  return <Card ref={cardRef} className={`card-commercial bg-card relative ${viewMode === "list" ? "flex flex-col md:flex-row" : ""} 
-        ${isBestValue && !hasWarning ? "card-best-value" : ""} 
-        ${hasWarning ? "card-warning" : ""}
-        overflow-hidden border-border/50`}>
-      {/* Status Banner */}
-      {banner && <div className={`py-1.5 px-3 text-xs font-bold text-center ${banner.className}`}>
-          {banner.icon} {banner.text}
-        </div>}
+  // Helper iconos visuales
+  const getFeatureIcon = (text: string) => {
+      const t = text.toLowerCase();
+      if(t.includes('sanatorio') || t.includes('hospital')) return <Building2 size={12} className="text-blue-600" />;
+      if(t.includes('odonto')) return <Stethoscope size={12} className="text-green-600" />;
+      if(t.includes('viajero')) return <Plane size={12} className="text-purple-600" />;
+      if(t.includes('hab')) return <BedDouble size={12} className="text-slate-500" />;
+      return <Check size={12} className="text-teal-600" />;
+  };
 
-      <div className="flex-1 flex flex-col">
-        {/* Header with Plan Name and Rating */}
-        <CardHeader className="pb-2 pt-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex flex-col gap-1">
-                <div className="flex justify-center">
-                  {EMPRESA_LOGOS[plan.empresa] ? <img src={`/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`} alt={plan.empresa} className="h-10 w-auto object-contain" /> : <span className="text-sm font-semibold text-foreground">{plan.empresa}</span>}
-                  
-                </div>
-                {(plan as any).nombre && <span className="text-sm font-medium text-muted-foreground">
-                    {(plan as any).nombre}
-                  </span>}
-                
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Cartilla: {plan.linea}
-              </p>
-            </div>
-            
-          </div>
-        </CardHeader>
+  const getFeatureStyle = (text: string) => {
+      const t = text.toLowerCase();
+      if(t.includes('sanatorio') || t.includes('hospital')) return "bg-blue-50 text-blue-700 border-blue-100";
+      if(t.includes('odonto')) return "bg-green-50 text-green-700 border-green-100";
+      if(t.includes('viajero')) return "bg-purple-50 text-purple-700 border-purple-100";
+      return "bg-slate-50 text-slate-700 border-slate-100";
+  };
 
-        <CardContent className="flex-1 py-2 space-y-3">
-          {/* Clinical Coverage Section */}
-          <div className="space-y-1.5">
-            <p className="text-xs font-bold text-foreground flex items-center gap-1.5">🏥 COBERTURA CLÍNICA</p>
-            
-          </div>
+  return (
+    <div 
+      ref={cardRef}
+      className={`group relative w-full bg-white rounded-3xl border border-slate-200 shadow-sm transition-all duration-300 flex flex-col overflow-hidden hover:shadow-xl hover:-translate-y-1
+        ${viewMode === "list" ? "md:flex-row md:items-stretch" : ""}
+      `}
+    >
+      {banner && (
+        <div className={`absolute top-0 left-0 text-[10px] font-bold px-3 py-1.5 rounded-br-xl rounded-tl-2xl z-20 uppercase tracking-wide ${banner.className}`}>
+          {banner.text}
+        </div>
+      )}
 
-          {/* Conditions Section */}
-          <div className="space-y-1.5">
-            <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
-              📋 CONDICIONES
-            </p>
-            <ul className="space-y-1">
-              {plan.attributes?.slice(0, 2).map((attr, idx) => <li key={`${plan._id}-attr-${idx}`} className="text-xs flex items-start gap-2">
-                  <span className="text-muted-foreground">•</span>
-                  <span>
-                    <span className="font-medium text-foreground">{attr.name}:</span>{" "}
-                    <span className="text-muted-foreground">{attr.value_name}</span>
-                  </span>
-                </li>)}
-              <li className="text-xs flex items-start gap-2">
-                <span className="text-muted-foreground">•</span>
-                <span>
-                  <span className="font-medium text-primary">Precio:</span>{" "}
-                  <span className="font-bold text-primary">${plan.precio?.toLocaleString('es-AR')}/mes</span>
-                </span>
-              </li>
-            </ul>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-col gap-2 pt-3 pb-4 border-t border-border/30 relative">
-          {/* CTA Button */}
-          <Button className="w-full h-10 text-sm font-bold bg-success hover:bg-success/90 text-success-foreground" onClick={() => onOpenDetails(plan)}>
-            ✅ Contratar {plan.name}
-          </Button>
-          
-          {/* View providers link */}
-          <button onClick={() => onOpenDetails(plan)} className="text-xs text-primary hover:underline font-medium">
-            Ver todos los Prestadores
-          </button>
-
-          {/* Compare button - bottom left corner */}
-          <button 
-            onClick={handleCompareClick}
-            className={`absolute bottom-3 left-3 flex items-center gap-1.5 text-xs transition-all duration-200 
-              ${isInComparison 
-                ? 'text-success font-medium' 
-                : 'text-muted-foreground hover:text-foreground'
-              }`}
-          >
-            {isInComparison ? (
-              <>
-                <Check className="h-3.5 w-3.5 animate-pop-in" />
-                <span>Agregado</span>
-              </>
-            ) : (
-              <span>Comparar</span>
-            )}
-            <ShoppingCart className={`h-3.5 w-3.5 ml-0.5 ${isInComparison ? 'text-success' : ''}`} />
-          </button>
-        </CardFooter>
+      {/* HEADER LOGO */}
+      <div className={`h-24 flex items-center justify-center p-4 border-b border-slate-50 relative ${viewMode === 'list' ? 'md:w-56 md:border-r' : ''}`}>
+         <div className="flex items-center gap-2 transform transition-transform group-hover:scale-105 duration-300">
+           {EMPRESA_LOGOS[plan.empresa] ? (
+              <img src={`/assets/images/card-header/${EMPRESA_LOGOS[plan.empresa]}`} alt={plan.empresa} className="h-10 w-auto object-contain" />
+           ) : (
+              <span className="text-xl font-bold text-slate-800">{plan.empresa}</span>
+           )}
+        </div>
       </div>
-    </Card>;
+
+      {/* CONTENIDO */}
+      <div className="p-5 flex flex-col flex-grow relative">
+        <div className="flex justify-between items-start mb-1">
+            <div>
+                <h3 className="font-bold text-xl text-slate-900 leading-tight">{(plan as any).nombre || plan.name}</h3>
+                <p className="text-xs text-slate-400 mt-1 font-medium">{plan.linea} • Cartilla Global</p>
+            </div>
+            <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-tight ${plan.copagos ? 'bg-slate-100 text-slate-500' : 'bg-green-50 text-green-700'}`}>
+                {plan.copagos ? 'Con Copagos' : 'Copago $0'}
+            </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mt-4 mb-6">
+            {includedKeyClinics.length > 0 ? (
+                includedKeyClinics.slice(0, 2).map((clinic, idx) => (
+                    <span key={idx} className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold border flex items-center gap-1.5 ${getFeatureStyle(clinic)}`}>
+                        {getFeatureIcon(clinic)} {clinic}
+                    </span>
+                ))
+            ) : (
+                plan.attributes?.slice(0, 2).map((attr, idx) => (
+                     <span key={idx} className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold border flex items-center gap-1.5 ${getFeatureStyle(attr.name)}`}>
+                        {getFeatureIcon(attr.name)} {attr.name}
+                    </span>
+                ))
+            )}
+             <span className="px-2.5 py-1.5 rounded-lg bg-slate-50 text-slate-600 border border-slate-100 text-[11px] font-bold flex items-center gap-1.5">
+                <Check size={12} /> + Beneficios
+            </span>
+        </div>
+
+        <div className="border-t border-slate-100 my-auto"></div>
+
+        <div className={`pt-4 ${viewMode === 'list' ? 'md:flex md:justify-between md:items-end' : ''}`}>
+            <div className="mb-4 md:mb-0">
+                <div className="text-xs text-red-400 line-through font-medium mb-0.5 ml-1">{formatCurrency(priceOriginal)}</div>
+                <div className="flex items-center gap-2">
+                    <div className="flex items-baseline gap-1">
+                        <span className="text-2xl font-black text-slate-900">{formatCurrency(priceFinal)}</span>
+                        <span className="text-xs text-slate-400 font-medium">/mes</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">-{discount}% OFF</span>
+                </div>
+            </div>
+
+            <div className="flex gap-3 items-center mt-4">
+                <Button 
+                    onClick={() => onOpenDetails(plan)}
+                    className={`flex-1 font-bold h-11 rounded-xl text-sm shadow-sm transition-all active:scale-95 ${isBestValue ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-orange-100' : 'bg-slate-900 hover:bg-slate-800 text-white'}`}
+                >
+                    Ver Detalle
+                </Button>
+                <button onClick={handleCompareClick} className="group/compare flex flex-col items-center justify-center w-14 gap-1 cursor-pointer">
+                    <div className={`w-9 h-9 rounded-lg border flex items-center justify-center transition-all ${isInComparison ? 'bg-teal-50 border-teal-500 text-teal-600' : 'bg-white border-slate-200 text-slate-300 group-hover/compare:border-slate-400 group-hover/compare:text-slate-500'}`}>
+                        {isInComparison ? <Check size={18} strokeWidth={3} /> : <Scale size={18} />}
+                    </div>
+                    <span className="text-[9px] font-medium text-slate-400">Comparar</span>
+                </button>
+            </div>
+        </div>
+      </div>
+    </div>
+  );
 };

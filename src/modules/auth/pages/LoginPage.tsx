@@ -3,11 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import AuthService from '@/services/auth.service';
 import Layout from '@/layouts/Layout';
+import { Mail, Lock, Loader2, LogIn, ArrowRight } from 'lucide-react';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -35,16 +36,17 @@ const LoginPage = () => {
 
       if (user) {
         toast({
-          title: 'Bienvenido',
+          title: '¡Hola de nuevo!',
           description: 'Has iniciado sesión correctamente.',
+          className: "bg-teal-50 border-teal-200 text-teal-900"
         });
         navigate('/');
       }
     } catch (err) {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'Ocurrió un error inesperado. Intenta de nuevo.',
+        title: 'Error inesperado',
+        description: 'Ocurrió un error al intentar conectar. Intenta de nuevo.',
       });
     } finally {
       setIsLoading(false);
@@ -53,75 +55,121 @@ const LoginPage = () => {
 
   return (
     <Layout>
-      <div className="min-h-[80vh] flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Iniciar Sesión
-            </CardTitle>
-            <CardDescription className="text-center">
-              Ingresa tus credenciales para acceder a tu cuenta
-            </CardDescription>
+      <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-slate-50 relative overflow-hidden">
+        
+        <Card className="w-full max-w-md border-0 shadow-2xl rounded-3xl overflow-hidden bg-white z-10">
+          
+          {/* HEADER */}
+          <CardHeader className="space-y-3 text-center pt-8 pb-6 bg-white">
+            <div className="mx-auto w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-2">
+              <LogIn className="w-8 h-8 text-teal-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Iniciar Sesión</h1>
+              <p className="text-slate-500 text-sm mt-1">Ingresa a tu cuenta para continuar</p>
+            </div>
           </CardHeader>
+
           <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5 px-8">
+              
+              {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Correo electrónico</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+                <Label htmlFor="email" className="text-xs font-bold text-slate-500 uppercase">Correo electrónico</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="tu@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="pl-10 rounded-xl border-slate-200 focus-visible:ring-teal-500 bg-slate-50/50 focus:bg-white transition-all"
+                  />
+                </div>
               </div>
+
+              {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="password" className="text-xs font-bold text-slate-500 uppercase">Contraseña</Label>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="pl-10 rounded-xl border-slate-200 focus-visible:ring-teal-500 bg-slate-50/50 focus:bg-white transition-all"
+                  />
+                </div>
               </div>
-              <div className="flex items-center justify-between">
+
+              {/* Remember Me & Forgot Password */}
+              <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="rememberMe"
                     checked={rememberMe}
                     onCheckedChange={(checked) => setRememberMe(checked === true)}
                     disabled={isLoading}
+                    className="border-slate-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
                   />
-                  <Label htmlFor="rememberMe" className="text-sm cursor-pointer">
+                  <Label htmlFor="rememberMe" className="text-sm text-slate-600 cursor-pointer font-medium">
                     Recordarme
                   </Label>
                 </div>
                 <Link
                   to="/auth/forgot-password"
-                  className="text-sm text-primary hover:underline"
+                  className="text-sm text-teal-600 hover:text-teal-700 font-semibold hover:underline transition-colors"
                 >
                   ¿Olvidaste tu contraseña?
                 </Link>
               </div>
+
             </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+
+            <CardFooter className="flex flex-col space-y-6 px-8 pb-8 pt-2">
+              <Button 
+                type="submit" 
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 rounded-xl shadow-lg shadow-orange-100 transition-all active:scale-95" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Iniciando...
+                    </>
+                ) : (
+                    <>
+                        Ingresar <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                )}
               </Button>
-              <p className="text-sm text-muted-foreground text-center">
-                ¿No tienes una cuenta?{' '}
-                <Link to="/auth/register" className="text-primary hover:underline">
-                  Regístrate
-                </Link>
-              </p>
+              
+              <div className="text-center space-y-2">
+                <p className="text-sm text-slate-500">
+                  ¿No tienes una cuenta?{' '}
+                  <Link to="/auth/register" className="text-teal-600 font-bold hover:text-teal-700 hover:underline transition-colors">
+                    Regístrate gratis
+                  </Link>
+                </p>
+              </div>
             </CardFooter>
           </form>
         </Card>
+
+        {/* Decoración de fondo */}
+        <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+            <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-teal-50 rounded-full blur-3xl opacity-50"></div>
+            <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-orange-50 rounded-full blur-3xl opacity-50"></div>
+        </div>
+
       </div>
     </Layout>
   );

@@ -1,7 +1,6 @@
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Share2, FileText } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 interface ComparisonHeaderProps {
   plansCount: number;
@@ -13,43 +12,39 @@ export const ComparisonHeader = ({ plansCount, isVendor, onSaveClick }: Comparis
   const navigate = useNavigate();
 
   return (
-    <div className="bg-gradient-to-br from-primary/5 via-background to-secondary/10 border-b border-border">
-      <div className="container mx-auto max-w-6xl px-4 sm:px-6 py-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate('/resultados')}
-              className="text-muted-foreground hover:text-foreground -ml-2"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              <span className="hidden sm:inline">Volver</span>
-            </Button>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-                Comparación de Planes
-              </h1>
-              <p className="text-sm text-muted-foreground hidden sm:block">
-                Compará beneficios, cartilla y coberturas
-              </p>
+    <div className="bg-white border-b border-slate-200 sticky top-0 z-40 h-16 flex items-center">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 flex items-center justify-between">
+        
+        {/* Izquierda: Volver */}
+        <div 
+            className="flex items-center gap-2 cursor-pointer group" 
+            onClick={() => navigate('/resultados')}
+        >
+            <div className="p-2 rounded-full bg-slate-50 group-hover:bg-slate-100 text-slate-400 group-hover:text-slate-600 transition-colors">
+                <ArrowLeft size={20} />
             </div>
-          </div>
-          <div className="flex items-center gap-2">
+            <div>
+                <h1 className="text-sm font-bold text-slate-700 group-hover:text-slate-900 transition-colors">Volver al listado</h1>
+                <p className="text-[10px] text-slate-400 hidden sm:block">Comparando {plansCount} planes</p>
+            </div>
+        </div>
+
+        {/* Derecha: Acciones */}
+        <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" className="text-slate-500 hover:text-teal-600 hidden sm:flex gap-2">
+                <Share2 size={16} /> Compartir
+            </Button>
+            
             {isVendor && (
-              <Button
-                variant="outline"
-                size="sm"
+              <Button 
                 onClick={onSaveClick}
                 disabled={plansCount === 0}
+                className="bg-slate-900 text-white hover:bg-slate-800 gap-2 shadow-md"
+                size="sm"
               >
-                <Save className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Guardar</span>
+                <Save size={16} /> <span className="hidden sm:inline">Guardar</span>
               </Button>
             )}
-            <Badge variant="secondary" className="text-xs">{plansCount} planes</Badge>
-            <Badge variant="outline" className="text-xs">Máx. 4</Badge>
-          </div>
         </div>
       </div>
     </div>

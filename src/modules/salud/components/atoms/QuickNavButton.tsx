@@ -11,7 +11,7 @@ export const QuickNavButton = ({ icon: Icon, label, onClick }: QuickNavButtonPro
   <Button
     variant="outline"
     size="sm"
-    className="shrink-0 gap-2 rounded-full hover:bg-primary hover:text-primary-foreground transition-colors"
+    className="shrink-0 gap-2 rounded-full border-slate-200 bg-white text-slate-600 hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50 transition-all shadow-sm h-9 px-4"
     onClick={onClick}
   >
     <Icon className="h-4 w-4" />

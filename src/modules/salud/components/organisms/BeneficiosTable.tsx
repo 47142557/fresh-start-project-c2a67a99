@@ -1,17 +1,13 @@
-import React from "react";
 import { HealthPlan } from "@/core/interfaces/plan/planes";
-import { PlanHeader } from "../molecules/PlanHeader";
 import { AttributeGroupRow } from "../molecules/AttributeGroupRow";
 import { AttributeRow } from "../molecules/AttributeRow";
-import { EmptyState } from "../molecules/EmptyState";
-import { ComparisonStyles } from "./ComparisonStyles";
 
 interface BeneficiosTableProps {
   plans: HealthPlan[];
   groupedAttributes: Record<string, string[]>;
   collapsedGroups: Set<string>;
   onToggleGroup: (groupName: string) => void;
-  onRemovePlan: (planId: string) => void;
+  onRemovePlan: (planId: string) => void; // Se mantiene por compatibilidad, aunque el header lo maneja
   getPlanAttributeValue: (plan: HealthPlan, attrName: string) => string;
 }
 
@@ -20,60 +16,44 @@ export const BeneficiosTable = ({
   groupedAttributes,
   collapsedGroups,
   onToggleGroup,
-  onRemovePlan,
   getPlanAttributeValue,
 }: BeneficiosTableProps) => {
-  if (plans.length === 0) {
-    return <EmptyState message="No hay planes seleccionados para comparar beneficios." />;
-  }
-
+  
   return (
-    <div className="tabs-content-container">
-      <style dangerouslySetInnerHTML={{ __html: ComparisonStyles }} />
-      
-      <div className="comparison-scroll-container">
-        <table className="min-w-full table-fixed divide-y divide-border condensed-table">
-          <thead className="sticky-header">
-            <tr>
-              <th scope="col" className="w-44 px-3 py-2 sticky-col corner-cell text-left text-xs font-semibold uppercase">
-                Beneficio
-              </th>
-              {plans.map(plan => (
-                <th key={plan._id} scope="col" className="min-w-[200px] border-l border-border">
-                  <PlanHeader plan={plan} onRemovePlan={onRemovePlan} compact />
-                </th>
+    <div className="w-full bg-white">
+      {Object.entries(groupedAttributes).map(([groupName, attributes]) => (
+        <div key={groupName}>
+          {/* Header del Grupo */}
+          <div className="grid grid-cols-1 md:grid-cols-4">
+             <AttributeGroupRow
+                groupName={groupName}
+                attributeCount={attributes.length}
+                isCollapsed={collapsedGroups.has(groupName)}
+                onToggle={() => onToggleGroup(groupName)}
+             />
+          </div>
+
+          {/* Filas de Atributos (Si no está colapsado) */}
+          {!collapsedGroups.has(groupName) && (
+            <div>
+              {attributes.map((attrName, idx) => (
+                <AttributeRow
+                  key={`${groupName}-${attrName}-${idx}`}
+                  attrName={attrName}
+                  plans={plans}
+                  getPlanAttributeValue={getPlanAttributeValue}
+                />
               ))}
-            </tr>
-          </thead>
-          <tbody className="bg-background">
-            {Object.entries(groupedAttributes).map(([groupName, attrNames]) => {
-              const isCollapsed = collapsedGroups.has(groupName);
-              
-              return (
-                <React.Fragment key={groupName}>
-                  <AttributeGroupRow
-                    groupName={groupName}
-                    attributeCount={attrNames.length}
-                    isCollapsed={isCollapsed}
-                    colSpan={plans.length + 1}
-                    onToggle={() => onToggleGroup(groupName)}
-                  />
-                  
-                  {!isCollapsed && attrNames.map((attrName, index) => (
-                    <AttributeRow
-                      key={attrName}
-                      attrName={attrName}
-                      plans={plans}
-                      index={index}
-                      getPlanAttributeValue={getPlanAttributeValue}
-                    />
-                  ))}
-                </React.Fragment>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+            </div>
+          )}
+        </div>
+      ))}
+      
+      {Object.keys(groupedAttributes).length === 0 && (
+        <div className="p-10 text-center text-slate-400">
+            No hay beneficios para mostrar.
+        </div>
+      )}
     </div>
   );
 };

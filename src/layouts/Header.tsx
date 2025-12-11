@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { UserCheck, LayoutDashboard } from "lucide-react";
+import { UserCheck, LayoutDashboard, Search } from "lucide-react";
 import { useVendorAuth } from "@/modules/vendor/hooks/useVendorAuth";
 
 const Header = () => {
@@ -8,13 +8,15 @@ const Header = () => {
   const { user, isVendor, isLoading } = useVendorAuth();
 
   return (
-    <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <a href="/" className="flex items-center">
+    <header className="border-b border-slate-100 bg-white/90 backdrop-blur-md sticky top-0 z-50 transition-all">
+      <div className="container mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+        
+        {/* LOGO */}
+        <a href="/" className="flex items-center gap-2 group">
           <img 
             src="/assets/images/logos/logo-header-tr.png" 
             alt="Mejor Plan - Consultores en Salud" 
-            className="h-10 hidden md:block"
+            className="h-12 hidden md:block transition-transform group-hover:scale-105"
           />
           <img 
             src="/assets/images/logos/logo-header-tr-mobile.png" 
@@ -22,31 +24,39 @@ const Header = () => {
             className="h-10 md:hidden"
           />
         </a>
-        <div className="flex items-center gap-2">
+
+        {/* ACCIONES */}
+        <div className="flex items-center gap-3">
+          
           {!isLoading && (
             user && isVendor ? (
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 onClick={() => navigate('/vendedor/dashboard')} 
-                className="shadow-sm"
+                className="text-slate-600 hover:text-teal-600 hover:bg-teal-50 font-medium"
               >
-                <LayoutDashboard className="h-4 w-4 mr-1.5" />
+                <LayoutDashboard className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Mi Dashboard</span>
-                <span className="sm:hidden">Dashboard</span>
+                <span className="sm:hidden">Dash</span>
               </Button>
             ) : (
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 onClick={() => navigate('/vendedor/registro')} 
-                className="shadow-sm"
+                className="text-slate-500 hover:text-teal-600 hover:bg-teal-50 font-medium hidden sm:flex"
               >
-                <UserCheck className="h-4 w-4 mr-1.5" />
-                <span className="hidden sm:inline">Soy Asesor</span>
-                <span className="sm:hidden">Asesor</span>
+                <UserCheck className="h-4 w-4 mr-2" />
+                Soy Asesor
               </Button>
             )
           )}
-          <Button onClick={() => navigate('/resultados')} className="shadow-sm">
+
+          {/* CTA PRINCIPAL */}
+          <Button 
+            onClick={() => navigate('/resultados')} 
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-full px-6 shadow-md shadow-orange-100 transition-all hover:shadow-lg active:scale-95"
+          >
+            <Search className="w-4 h-4 mr-2" />
             Ver Planes
           </Button>
         </div>

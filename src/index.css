@@ -13,60 +13,45 @@
 
 @layer base {
   :root {
-    /* Background & Surfaces */
-    --background: 0 0% 96%;
-    --foreground: 0 0% 9%;
+    /* Fondo base */
+    --background: 210 40% 98%; /* Un gris azulado muy suave (Slate-50) */
+    --foreground: 222.2 84% 4.9%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 9%;
+    /* Tarjetas (Blanco puro) */
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
 
-    --popover: 0 0% 89%;
-    --popover-foreground: 0 0% 9%;
+    /* PRIMARY: Teal (Verde Azulado Médico) */
+    --primary: 173 80% 40%; /* Un Teal vibrante pero profesional */
+    --primary-foreground: 210 40% 98%;
 
-    /* Primary - Trust Blue (stronger) */
-    --primary: 20 90% 48%;
-    --primary-foreground: 33 100% 96%;
-    --primary-light: 210 85% 95%;
+    /* SECONDARY: Fondos suaves */
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
 
-    /* Secondary - Health Green (vibrant) */
-    --secondary: 0 0% 32%;
-    --secondary-foreground: 0 0% 98%;
-    --secondary-light: 155 60% 94%;
+    /* CTA HIGHLIGHT: Naranja de Acción (Botón Ver Detalle) */
+    --cta-highlight: 24 95% 53%; /* Naranja Vibrante */
+    --cta-highlight-foreground: 0 0% 100%; /* Texto blanco */
 
-    /* Muted */
-    --muted: 0 0% 63%;
-    --muted-foreground: 0 0% 9%;
+    /* SUCCESS: Verdes para descuentos/checks */
+    --success: 142 76% 36%;
+    --success-foreground: 355.7 100% 97.3%;
 
-    /* Accent - Hot Pink/Magenta for CTAs */
-    --accent: 47 100% 96%;
-    --accent-foreground: 37 92% 50%;
-
-    /* CTA Highlight - Yellow */
-    --cta-highlight: 45 95% 55%;
-    --cta-highlight-foreground: 215 30% 15%;
-
-    /* Destructive */
-    --destructive: 0 72% 50%;
-    --destructive-foreground: 0 85% 97%;
-
-    /* Success - Bright Green */
-    --success: 145 75% 42%;
-    --success-foreground: 0 0% 100%;
-
-    /* Warning */
-    --warning: 45 93% 47%;
-    --warning-foreground: 0 0% 100%;
-
-    /* Info */
-    --info: 200 90% 50%;
-    --info-foreground: 0 0% 100%;
-
-    /* Borders & Inputs */
-    --border: 0 0% 83%;
-    --input: 0 0% 83%;
-    --ring: 20 90% 48%;
-
-    --radius: 0.75rem;
+    /* DESTRUCTIVE: Rojos para tachados/warnings */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    
+    /* OTROS */
+    --muted: 215.4 16.3% 46.9%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 173 80% 40%; /* Ring igual al primary */
+    --radius: 1rem; /* Bordes redondeados modernos (16px) */
 
     /* Gradients - More vibrant */
     --gradient-primary: linear-gradient(135deg, hsl(210 90% 45%), hsl(155 70% 40%));

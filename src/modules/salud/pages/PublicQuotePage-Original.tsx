@@ -4,10 +4,8 @@ import { Helmet } from "react-helmet-async";
 import { useToast } from "@/hooks/use-toast";
 import { getQuoteByToken, recordQuoteView, PublicQuote } from "@/services/quotes.service";
 
-// --- COMPONENTS ---
-import { QuoteWizard } from "@/modules/salud/components/organisms/QuoteWizard";
 import { QuoteLoadingSkeleton } from "@/modules/salud/components/molecules/QuoteLoadingSkeleton";
-import { QuoteErrorState } from "@/modules/salud/components/molecules/QuoteErrorState"; // Asegúrate que exista o usa un div
+import { QuoteErrorState } from "@/modules/salud/components/molecules/QuoteErrorState";
 import { QuoteAccessForm } from "@/modules/salud/components/molecules/QuoteAccessForm";
 import { QuoteHeader } from "@/modules/salud/components/organisms/QuoteHeader";
 import { QuotePlansList } from "@/modules/salud/components/organisms/QuotePlansList";
@@ -20,7 +18,6 @@ interface Plan {
   name: string;
   empresa: string;
   precio: number;
-  // Agrega aquí otras props que necesite tu QuotePlansList
 }
 
 // --- CUSTOM HOOK ---
@@ -174,8 +171,7 @@ const usePublicQuote = (token: string | undefined) => {
 
   const getPlansFromFormData = useCallback((): Plan[] => {
     if (!quote?.form_data) return [];
-    // Aseguramos el tipado correcto
-    const formData = quote.form_data as unknown as { plans?: Plan[] };
+    const formData = quote.form_data as { plans?: Plan[] };
     return formData.plans || [];
   }, [quote]);
 
@@ -197,9 +193,6 @@ const usePublicQuote = (token: string | undefined) => {
 // --- MAIN COMPONENT ---
 export const PublicQuotePage = () => {
   const { token } = useParams<{ token: string }>();
-  
-  // 1. AQUI DEFINIMOS EL ESTADO QUE FALTABA
-  const [showModal, setShowModal] = useState(false);
 
   const {
     quote,
@@ -215,18 +208,12 @@ export const PublicQuotePage = () => {
     plans,
   } = usePublicQuote(token);
 
-  // --- EARLY RETURNS (Estados de carga/error) ---
-
   if (isLoading) {
     return <QuoteLoadingSkeleton />;
   }
 
   if (error) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-             <QuoteErrorState message={error} />
-        </div>
-    );
+    return <QuoteErrorState message={error} />;
   }
 
   if (requiresCode) {
@@ -240,43 +227,32 @@ export const PublicQuotePage = () => {
     );
   }
 
-  // --- RENDER FINAL (Página + Modal) ---
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 font-sans">
-        <Helmet>
-            <title>{quote?.quote_name ? `Cotización: ${quote.quote_name}` : 'Tu Cotización de Salud'}</title>
-        </Helmet>
+    <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{quote?.quote_name || "Cotización"} | Mejor Plan</title>
+      </Helmet>
 
-        {/* 1. Header con datos del cliente */}
-        <QuoteHeader quote={quote} />
-
-        <div className="container mx-auto px-4 max-w-7xl space-y-8 mt-8">
-            
-            {/* 2. Botonera de Acciones (Descargar / Recotizar) */}
-            <QuoteActions 
-                onDownload={handleDownloadPdf} 
-                isDownloading={isDownloading}
-                onRecalculate={() => setShowModal(true)} // <-- Abre el modal
-            />
-
-            {/* 3. Lista de Planes (Cards) */}
-            <QuotePlansList plans={plans} />
-
-        </div>
-
-        {/* 4. Footer */}
-        <QuoteFooter />
-
-        {/* 5. MODAL WIZARD (Flotante) */}
-        <QuoteWizard 
-            isOpen={showModal} 
-            onClose={() => setShowModal(false)}
-            onComplete={(data) => {
-                console.log("Nueva cotización solicitada:", data);
-                setShowModal(false);
-                // Aquí podrías redirigir a una nueva URL o actualizar el estado
-            }}
+      <div className="container max-w-4xl mx-auto py-8 px-4">
+        <QuoteHeader
+          quoteName={quote?.quote_name}
+          createdAt={quote?.created_at}
+          familyGroup={quote?.family_group}
+          requestType={quote?.request_type}
+          residenceZone={quote?.residence_zone}
+          customMessage={quote?.custom_message}
         />
+
+        <QuotePlansList plans={plans} />
+
+        <QuoteActions
+          hasPdf={!!quote?.pdf_html}
+          isDownloading={isDownloading}
+          onDownload={handleDownloadPdf}
+        />
+
+        <QuoteFooter />
+      </div>
     </div>
   );
 };

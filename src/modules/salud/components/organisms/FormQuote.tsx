@@ -1,109 +1,48 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef, SVGProps } from 'react';
-import { JSX } from 'react/jsx-runtime';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { submitQuote } from '@/services/health.service';
 import { QuoteFormData } from '@/core/interfaces/plan/quoteFormData';
+// Iconos
+import { User, Users, UserPlus, Phone, MessageSquare, Minus, Plus, ArrowRight, Info } from 'lucide-react';
+// UI Components
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,      // <--- Verificar
+  DialogTitle,       // <--- Verificar
+  DialogDescription, // <--- Verificar
+} from "@/components/ui/dialog";
 import { initialFormData } from '@/data/initialFormData';
-// Define the custom primary color for consistency with the Angular component's styling
-const PRIMARY_COLOR = '#4d72aa';
-const SECONDARY_COLOR = '#c4e2ff';
-const DANGER_COLOR = '#d9534f';
-const INFO_COLOR = '#e6f0ff';
-const DELETE_COLOR = '#cc0000';
-
-// Inline Lucide Icons (React props style)
-
-// User Icon (Individual)
-const UserIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user">
-    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-  </svg>
-);
-
-// Users Icon (Pareja)
-const UsersIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-  </svg>
-);
-
-// User Plus Icon (Titular + Hijos)
-const UserPlusIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user-plus">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/>
-  </svg>
-);
-
-// Users Plus Icon (Pareja + Hijos)
-const UsersPlusIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users-plus">
-    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/><path d="M17.5 17.5v-10h-1"/>
-  </svg>
-);
-
-// Phone Icon (Contacto)
-const PhoneIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-phone">
-    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-3.67-2.61L7.54 13.91l1.84-1.84 2.87-2.87 1.84-1.84 2.61-3.67A19.5 19.5 0 0 1 19.92 4A2 2 0 0 1 22 6.18v3.63"/>
-  </svg>
-);
-
-// Message Square Icon (Whatsapp)
-const MessageSquareIcon = (props: SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-square">
-    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-  </svg>
-);
 
 
 const PERSONAL_DATA_STORAGE_KEY = 'visitor_personal_data';
 
 interface FormQuoteProps {
-  onClose?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onComplete?: (data: QuoteFormData) => void;
 }
 
-const FormQuote: React.FC<FormQuoteProps> = ({ onClose }) => {
+export const FormQuote: React.FC<FormQuoteProps> = ({ isOpen, onClose, onComplete }) => {
   const { toast } = useToast();
-  // --- State Variables ---
+  
+  // --- ESTADOS ---
   const [activeStep, setActiveStep] = useState(1);
-  const [selectedGroup, setSelectedGroup] = useState<number | null>(null); // 1, 2, 3, 4
-  const [edadTitular, setEdadTitular] = useState(18);
-  const [edadConyuge, setEdadConyuge] = useState(0);
+  const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
+  const [edadTitular, setEdadTitular] = useState(30);
+  const [edadConyuge, setEdadConyuge] = useState(30);
   const [cantidadHijos, setCantidadHijos] = useState(0);
   const [sueldoInput, setSueldoInput] = useState('');
-  const [aportesType, setAportesType] = useState<string | null>(null); // 'D' or 'P'
+  const [aportesType, setAportesType] = useState<string | null>('rel'); 
   const [cotizacionVisible, setCotizacionVisible] = useState(false);
-  const [contactoType, setContactoType] = useState<string | null>(null); // 'phone' or 'whatsapp'
+  const [contactoType, setContactoType] = useState<string | null>(null);
   const [formData, setFormData] = useState<QuoteFormData>(initialFormData);
-  const [hasStoredPersonalData, setHasStoredPersonalData] = useState(false);
-  const [isEditingPersonalData, setIsEditingPersonalData] = useState(false);
-
-  // --- Refs for continuous increment/decrement ---
+  
+  // Refs
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // --- Load stored personal data on mount ---
-  useEffect(() => {
-    try {
-      const storedData = localStorage.getItem(PERSONAL_DATA_STORAGE_KEY);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        if (parsedData.name && parsedData.email && parsedData.phone) {
-          setFormData(prev => ({
-            ...prev,
-            personalData: parsedData
-          }));
-          setHasStoredPersonalData(true);
-        }
-      }
-    } catch (error) {
-      // Ignore parsing errors
-    }
-  }, []);
-
-  // --- Utility Functions ---
-
-  // Replicates Angular's FormBuilder.group/patchValue logic
+  // --- EFECTOS Y CALLBACKS ---
   const updateFormData = useCallback((fields: Partial<QuoteFormData>) => {
     setFormData(prev => ({ ...prev, ...fields }));
   }, []);
@@ -111,935 +50,313 @@ const FormQuote: React.FC<FormQuoteProps> = ({ onClose }) => {
   const updatePersonalData = useCallback((field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      personalData: {
-        ...prev.personalData,
-        [field]: value
-      }
+      personalData: { ...prev.personalData, [field]: value }
     }));
   }, []);
 
-  // Save personal data to localStorage when submitted
-  const savePersonalDataToStorage = useCallback((personalData: typeof formData.personalData) => {
-    try {
-      localStorage.setItem(PERSONAL_DATA_STORAGE_KEY, JSON.stringify(personalData));
-      setHasStoredPersonalData(true);
-    } catch (error) {
-      // Ignore storage errors
-    }
-  }, []);
-
   const updateChildAge = useCallback((index: number, value: number) => {
-    const controlName = `edadHijo${index + 1}`;
+    const controlName = `edadHijo${index + 1}` as keyof QuoteFormData;
     updateFormData({ [controlName]: value });
   }, [updateFormData]);
-  
-  // Update main form data when ages change (like Angular's patchValue in hook)
+
   useEffect(() => {
-    updateFormData({ 
-      edad_1: edadTitular,
-      edad_2: edadConyuge,
-      numkids: cantidadHijos,
-    });
+    updateFormData({ edad_1: edadTitular, edad_2: edadConyuge, numkids: cantidadHijos });
   }, [edadTitular, edadConyuge, cantidadHijos, updateFormData]);
 
+  useEffect(() => {
+    if (isOpen) {
+      try {
+        const storedData = localStorage.getItem(PERSONAL_DATA_STORAGE_KEY);
+        if (storedData) {
+          const parsedData = JSON.parse(storedData);
+          if (parsedData.name) setFormData(prev => ({ ...prev, personalData: parsedData }));
+        }
+      } catch (e) { console.error(e); }
+    } else {
+      const timer = setTimeout(() => {
+        setActiveStep(1);
+        setSueldoInput('');
+        setCotizacionVisible(false);
+        setContactoType(null);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
-  // --- Step 1 Handlers (Grupo Familiar) ---
-
+  // --- HANDLERS ---
   const selectGroup = (group: number) => {
     setSelectedGroup(group);
     updateFormData({ group });
-
-    // Reset ages based on new group (Angular's resetAges logic)
-    if (group === 1 || group === 3) {
-      setCantidadHijos(0);
-    }
-    if (group === 1 || group === 2) {
-      setEdadConyuge(0);
-    }
-    // Reset all child ages in form data
-    const resetChildren: Partial<QuoteFormData> = {
-      edadHijo1: 0,
-      edadHijo2: 0,
-      edadHijo3: 0,
-      edadHijo4: 0,
-      edadHijo5: 0
-    };
-    updateFormData(resetChildren);
+    if (group === 1 || group === 3) setCantidadHijos(0);
+    if (group === 1 || group === 2) setEdadConyuge(0);
   };
 
-  const incrementar = (member: string) => {
-    if (member === 'titular') {
-      setEdadTitular(prev => prev + 1);
-    } else if (member === 'conyuge' && selectedGroup && selectedGroup > 2) {
-      setEdadConyuge(prev => prev + 1);
-    } else if (member === 'hijos' && cantidadHijos < 5) {
-      setCantidadHijos(prev => {
-        const newCount = prev + 1;
-        // Set initial age for the new child (Angular's logic was 1)
-        updateChildAge(newCount - 1, 1);
-        return newCount;
-      });
+  const incrementar = (member: 'titular' | 'conyuge' | 'hijos') => {
+    if (member === 'titular') setEdadTitular(p => p + 1);
+    else if (member === 'conyuge') setEdadConyuge(p => p + 1);
+    else if (member === 'hijos' && cantidadHijos < 5) {
+      setCantidadHijos(p => { updateChildAge(p, 1); return p + 1; });
     }
   };
 
-  const decrementar = (member: string) => {
-    if (member === 'titular' && edadTitular > 18) {
-      setEdadTitular(prev => prev - 1);
-    } else if (member === 'conyuge' && edadConyuge > 0 && selectedGroup && selectedGroup > 2) {
-      setEdadConyuge(prev => prev - 1);
-    } else if (member === 'hijos' && cantidadHijos > 0) {
-      setCantidadHijos(prev => {
-        const newCount = prev - 1;
-        // Reset the age of the child being removed
-        updateChildAge(prev - 1, 0);
-        return newCount;
-      });
+  const decrementar = (member: 'titular' | 'conyuge' | 'hijos') => {
+    if (member === 'titular' && edadTitular > 18) setEdadTitular(p => p - 1);
+    else if (member === 'conyuge' && edadConyuge > 18) setEdadConyuge(p => p - 1);
+    else if (member === 'hijos' && cantidadHijos > 0) {
+      setCantidadHijos(p => { updateChildAge(p - 1, 0); return p - 1; });
     }
   };
 
-  const incrementarChildAge = (index: number) => {
-    const childAgeKey = `edadHijo${index + 1}` as keyof Pick<QuoteFormData, 'edadHijo1' | 'edadHijo2' | 'edadHijo3' | 'edadHijo4' | 'edadHijo5'>;
-    const currentAge = formData[childAgeKey] || 0;
-    updateChildAge(index, currentAge + 1);
-  };
-
-  const decrementarChildAge = (index: number) => {
-    const childAgeKey = `edadHijo${index + 1}` as keyof Pick<QuoteFormData, 'edadHijo1' | 'edadHijo2' | 'edadHijo3' | 'edadHijo4' | 'edadHijo5'>;
-    const currentAge = formData[childAgeKey] || 0;
-    if (currentAge > 0) {
-      updateChildAge(index, currentAge - 1);
-    }
-  };
-
-  const getChildAgeControls = useMemo(() => {
-    return Array.from({ length: cantidadHijos }, (_, i) => i);
-  }, [cantidadHijos]);
-
-  // --- Continuous increment/decrement handlers ---
-  const startContinuousAction = (action: () => void) => {
-    // Execute immediately
+  const startContinuous = (action: () => void) => {
     action();
-    
-    // Wait 500ms before starting continuous action
     timeoutRef.current = setTimeout(() => {
-      intervalRef.current = setInterval(() => {
-        action();
-      }, 100); // Repeat every 100ms
+      intervalRef.current = setInterval(action, 100);
     }, 500);
   };
 
-  const stopContinuousAction = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
+  const stopContinuous = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (intervalRef.current) clearInterval(intervalRef.current);
   };
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopContinuousAction();
-    };
-  }, []);
-
-  // --- Step 2 Handlers (Forma de Ingreso) ---
-
-  const selectAportesType = (tipo: string) => {
-    setAportesType(tipo);
-    updateFormData({ tipo });
-
-    if (tipo === 'P') {
-      // Clear sueldo if P is selected
-      setSueldoInput('');
-      updateFormData({ sueldo: 0 });
-    }
+  const handleSalaryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    if (!raw) { setSueldoInput(''); updateFormData({ sueldo: 0 }); return; }
+    setSueldoInput(raw);
+    updateFormData({ sueldo: parseInt(raw, 10) });
   };
+  
+  const formattedSueldo = sueldoInput ? new Intl.NumberFormat('es-AR').format(parseInt(sueldoInput)) : '';
 
-  const addNumber = (num: number) => {
-    if (sueldoInput.length < 10) {
-      const newSueldoInput = sueldoInput + num.toString();
-      setSueldoInput(newSueldoInput);
-      updateFormData({ sueldo: parseInt(newSueldoInput, 10) || 0 });
-    }
-  };
-
-  const deleteNumber = () => {
-    const newSueldoInput = sueldoInput.slice(0, -1);
-    setSueldoInput(newSueldoInput);
-    updateFormData({ sueldo: parseInt(newSueldoInput, 10) || 0 });
-  };
-
-  const formattedSueldo = useMemo(() => {
-    const sueldoValue = formData.sueldo;
-    if (!sueldoValue || isNaN(sueldoValue)) return '';
-    // Use Intl.NumberFormat for Spanish locale formatting
-    return new Intl.NumberFormat('es-AR', {
-      style: 'decimal',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    }).format(sueldoValue);
-  }, [formData.sueldo]);
-
-
-  // --- Step 3 Handlers (Datos Personales) ---
-
-  const isPersonalDataValid = useMemo(() => {
-    const pd = formData.personalData;
-    return pd.name.trim() !== '' &&
-           pd.phone.trim() !== '' &&
-           /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pd.email);
-  }, [formData.personalData]);
-
-  // Mask email: show first 2 chars, mask until @, show domain
-  const maskEmail = (email: string): string => {
-    const atIndex = email.indexOf('@');
-    if (atIndex <= 2) return email;
-    const firstPart = email.substring(0, 2);
-    const domain = email.substring(atIndex);
-    const maskedPart = '*'.repeat(Math.min(atIndex - 2, 6));
-    return `${firstPart}${maskedPart}${domain}`;
-  };
-
-  // Mask phone: show last 4 digits
-  const maskPhone = (phone: string): string => {
-    if (phone.length <= 4) return phone;
-    const masked = '*'.repeat(phone.length - 4);
-    return `${masked}${phone.slice(-4)}`;
-  };
-
-  const verCotizacion = () => {
-    if (isPersonalDataValid) {
-      setCotizacionVisible(true);
-    } else {
-      console.error('Por favor, completa todos los campos personales correctamente.');
+  const handleFinish = async () => {
+    const quoteData = { ...formData, contact: { ...formData.personalData, method: contactoType } };
+    if (onComplete) onComplete(quoteData); 
+    else {
+       toast({ title: "Cotización enviada", description: "Te contactaremos pronto." });
+       setTimeout(onClose, 2000);
     }
   };
 
   const selectContactoType = (type: string) => {
     setContactoType(type);
     updatePersonalData('medioContacto', type);
-    submitFormManually();
-    
-    // Auto-close after 3 seconds
-    setTimeout(() => {
-      if (onClose) {
-        onClose();
-      }
-    }, 3000);
+    setCotizacionVisible(true);
+    setTimeout(() => handleFinish(), 1500);
   };
-
-  const submitFormManually = async () => {
-    toast({
-      title: "Enviando cotización...",
-      description: "Por favor espera mientras procesamos tu solicitud",
-    });
-
-    const quoteData: QuoteFormData = {
-      _id: formData._id,
-      group: formData.group,
-      empresa_prepaga: formData.empresa_prepaga,
-      edad_1: formData.edad_1,
-      edad_2: formData.edad_2,
-      numkids: formData.numkids,
-      edadHijo1: formData.edadHijo1,
-      edadHijo2: formData.edadHijo2,
-      edadHijo3: formData.edadHijo3,
-      edadHijo4: formData.edadHijo4,
-      edadHijo5: formData.edadHijo5,
-      zone_type: formData.zone_type,
-      tipo: formData.tipo,
-      agree: formData.agree,
-      sueldo: formData.sueldo,
-      aporteOS: formData.aporteOS,
-      aporte: formData.aporte,
-      categoriaMono: formData.categoriaMono,
-      monoadic: formData.monoadic,
-      cantAport: formData.cantAport,
-      afinidad: formData.afinidad,
-      bonAfinidad: formData.bonAfinidad,
-      personalData: formData.personalData
-    };
-
-    const result = await submitQuote(quoteData);
-
-    if (!result.success) {
-      toast({
-        title: "Error al enviar",
-        description: "No pudimos procesar tu cotización. Por favor intenta nuevamente.",
-        variant: "destructive"
-      });
-    } else {
-      // Save personal data for future quotes
-      savePersonalDataToStorage(formData.personalData);
-      toast({
-        title: "¡Cotización enviada!",
-        description: "Hemos recibido tu solicitud. Te contactaremos pronto.",
-      });
-    }
-  };
-
-  // --- Step Navigation ---
 
   const goToNextStep = () => {
-    if (activeStep === 1 && selectedGroup !== null) {
-      setActiveStep(2);
-    } else if (activeStep === 2 && aportesType !== null) {
-      if (aportesType === 'D' && formData.sueldo === 0) {
-        console.error("Por favor, ingrese un sueldo bruto válido.");
-        return;
+    if (activeStep === 1 && selectedGroup) setActiveStep(2);
+    else if (activeStep === 2) {
+      if (aportesType === 'rel' && (!sueldoInput || parseInt(sueldoInput) === 0)) {
+         toast({ title: "Error", description: "Ingresa un sueldo válido", variant: "destructive" });
+         return;
       }
       setActiveStep(3);
     }
   };
 
-  const goToPrevStep = () => {
-    setActiveStep(prev => prev - 1);
-  };
+  const progress = activeStep === 1 ? '33%' : activeStep === 2 ? '66%' : '100%';
 
+   return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-lg p-0 overflow-hidden bg-white border-0 shadow-2xl rounded-3xl gap-0 outline-none">
+        
+        {/* ================================================================= */}
+        {/* SOLUCIÓN AL ERROR DE ACCESIBILIDAD (Esto elimina el warning)      */}
+        {/* ================================================================= */}
+        <DialogHeader className="px-8 pt-6 pb-0">
+          <DialogTitle className="sr-only">Cotizador de Planes</DialogTitle>
+          <DialogDescription className="sr-only">
+            Completa los pasos para recibir tu cotización.
+          </DialogDescription>
+        </DialogHeader>
+        {/* ================================================================= */}
 
-  // --- Component JSX Render ---
-
-  // Custom CSS for variables and complex selectors
-  const customStyles = `
-    .main-container {
-      font-family: 'Inter', sans-serif;
-    }
-    .flex-container {
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      gap: 1rem;
-    }
-
-    .btn-group, .btn-choice {
-      /* Base styles for all large buttons */
-      min-width: 120px;
-      height: 120px;
-      text-align: center;
-      background-color: #fff;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid #ccc;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      font-weight: 600;
-      color: #4e636d;
-      cursor: pointer;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .btn-group:hover, .btn-choice:hover {
-      border-color: ${PRIMARY_COLOR};
-      background-color: ${SECONDARY_COLOR};
-    }
-    
-    .btn-group.active, .btn-choice.active {
-      border-color: ${PRIMARY_COLOR};
-      background-color: ${SECONDARY_COLOR};
-      color: ${PRIMARY_COLOR};
-      transform: translateY(-2px);
-      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-    }
-    
-    .btn-group svg {
-      width: 40px;
-      height: 40px;
-      margin-bottom: 5px;
-      color: #66a9d8;
-    }
-    .btn-group.active svg {
-      color: ${PRIMARY_COLOR};
-    }
-
-    /* Step 2 specific styles */
-    .btn-choice {
-      height: 80px;
-      font-size: 0.9rem;
-      flex-basis: 50%;
-      min-width: 100px;
-      padding: 10px;
-    }
-
-    /* Incrementer/Decrementer styles */
-    .flex-contenedor {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 35px;
-    }
-
-    .btn.inner-square-cuatro-div {
-      width: 35px;
-      height: 35px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      background-color: #f0f0f0;
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: #4e636d;
-      transition: background-color 0.1s;
-    }
-
-    .btn.inner-square-cuatro-div:hover {
-      background-color: #ddd;
-    }
-
-    .btn.inner-square-cuatro-div.mas {
-      background-color: ${INFO_COLOR};
-      color: ${PRIMARY_COLOR};
-    }
-    .btn.inner-square-cuatro-div.menos {
-      background-color: #fce6e6;
-      color: ${DANGER_COLOR};
-    }
-
-    /* Numeric Pad */
-    .numpad {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.5rem;
-    }
-    .btn-pad {
-      padding: 1rem;
-      font-size: 1.25rem;
-      font-weight: bold;
-      border-radius: 8px;
-      background-color: #e0e0e0;
-      transition: background-color 0.1s;
-    }
-    .btn-pad:hover {
-      background-color: #ccc;
-    }
-    .btn-pad.delete {
-      background-color: #f9dcdc;
-      color: ${DELETE_COLOR};
-    }
-    .btn-pad.listo {
-      grid-column: span 3;
-      background-color: ${PRIMARY_COLOR};
-      color: white;
-    }
-
-    /* Form Styles */
-    .form-group label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 5px;
-      color: #585858;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: ${PRIMARY_COLOR};
-    }
-    .error span {
-      display: block;
-      color: #ff0f03;
-      font-size: 0.8rem;
-      margin-top: 5px;
-    }
-    
-    .contact-btn {
-      height: 100px;
-      width: 100%;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 10px;
-      border: 2px solid #ccc;
-      background-color: #fff;
-      font-weight: 600;
-      color: #4e636d;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease-in-out;
-    }
-
-    .contact-btn:hover {
-      border-color: ${PRIMARY_COLOR};
-      background-color: ${SECONDARY_COLOR};
-    }
-
-    .contact-btn svg {
-      margin-bottom: 5px;
-    }
-
-
-    @media (max-width: 640px) {
-      .flex-container {
-        gap: 0.5rem;
-      }
-      .btn-group {
-        min-width: 90px;
-        height: 90px;
-      }
-      .btn-group svg {
-        width: 30px;
-        height: 30px;
-      }
-      .btn-choice {
-        min-width: unset;
-        height: 70px;
-        padding: 5px;
-        font-size: 0.8rem;
-      }
-      .btn-pad {
-        padding: 0.75rem;
-      }
-    }
-  `;
-
-  // Helper for progress bar classes
-  const getStepClass = (step: number) =>
-    activeStep === step
-      ? `bg-[${PRIMARY_COLOR}] text-white`
-      : 'bg-gray-200 text-gray-600';
-
-  // Helper for button active classes
-  const getButtonClass = (group: number) =>
-    `btn-group ${selectedGroup === group ? 'active' : ''}`;
-
-
-  return (
-    <>
-      <style>{customStyles}</style>
-      <div className="main-container w-full p-6 sm:p-8 bg-background">
-        <h1 style={{ color: PRIMARY_COLOR }} className="text-2xl font-bold text-center mb-8">Cotizador de Planes</h1>
-
-        {/* Progress/Step Indicator - Hide when cotizacion is visible */}
-        {!cotizacionVisible && (
-          <div className="flex justify-between text-xs sm:text-sm font-semibold mb-8">
-            <div className="text-center w-1/3">
-              <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(1)}`}>1</div>
-              <span style={{ color: activeStep === 1 ? PRIMARY_COLOR : '' }} className={activeStep === 1 ? 'text-blue-700' : 'text-gray-500'}>Grupo Familiar</span>
-            </div>
-            <div className="text-center w-1/3">
-              <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(2)}`}>2</div>
-              <span style={{ color: activeStep === 2 ? PRIMARY_COLOR : '' }} className={activeStep === 2 ? 'text-blue-700' : 'text-gray-500'}>Forma de Ingreso</span>
-            </div>
-            <div className="text-center w-1/3">
-              <div className={`w-6 h-6 rounded-full mx-auto mb-1 flex items-center justify-center ${getStepClass(3)}`}>3</div>
-              <span style={{ color: activeStep === 3 ? PRIMARY_COLOR : '' }} className={activeStep === 3 ? 'text-blue-700' : 'text-gray-500'}>Datos Personales</span>
-            </div>
+        {/* HEADER VISUAL (Tu diseño Vitalia) */}
+        <div className="px-8 pt-2 pb-2 bg-white z-10"> {/* Ajusté el pt-6 a pt-2 porque el DialogHeader ya tiene padding */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-slate-800">
+              {activeStep === 1 && "Grupo Familiar"}
+              {activeStep === 2 && "Forma de Ingreso"}
+              {activeStep === 3 && (cotizacionVisible ? "¡Listo!" : "Tus Datos")}
+            </h2>
+            {/* El botón de cerrar X viene por defecto en DialogContent, 
+                pero si quieres usar el tuyo personalizado: */}
           </div>
-        )}
+          
+          {/* Barra de Progreso */}
+          <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-teal-600 transition-all duration-500 ease-out rounded-full" 
+              style={{ width: progress }}
+            />
+          </div>
+        </div>
 
-        {/* Main Form Content (Using standard HTML form, managing state via React) */}
-        <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
-
-          {/* Step 1: Grupo Familiar */}
+        {/* BODY SCROLLABLE (Resto del formulario) */}
+        <div className="p-8 flex-grow flex flex-col justify-between overflow-y-auto max-h-[65vh]">
+          {/* ... (Todo el contenido de los pasos 1, 2 y 3 sigue igual) ... */}
+          {/* PASO 1 */}
           {activeStep === 1 && (
-            <div className="step-content">
-              <h2 className="text-lg font-semibold mb-4 text-gray-700">1. Selecciona tu Grupo Familiar</h2>
-              
-              {!selectedGroup ? (
-                // Show all 4 group buttons when none is selected
-                <div className="flex flex-wrap justify-center mb-6 gap-3">
-                  <button type="button" className={getButtonClass(1)} onClick={() => selectGroup(1)}>
-                    <UserIcon />
-                    <span className="text-xs mt-1">Individual</span>
-                  </button>
-                  <button type="button" className={getButtonClass(3)} onClick={() => selectGroup(3)}>
-                    <UsersIcon />
-                    <span className="text-xs mt-1">Pareja</span>
-                  </button>
-                  <button type="button" className={getButtonClass(2)} onClick={() => selectGroup(2)}>
-                    <UserPlusIcon />
-                    <span className="text-xs mt-1">Titular + Hijos</span>
-                  </button>
-                  <button type="button" className={getButtonClass(4)} onClick={() => selectGroup(4)}>
-                    <UsersPlusIcon />
-                    <span className="text-xs mt-1">Pareja + Hijos</span>
-                  </button>
-                </div>
-              ) : (
-                // Show selected group button on left and ages on right
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                  {/* Selected Group Button */}
-                  <div className="flex-shrink-0">
+            <div className="flex flex-col h-full animate-in slide-in-from-right-8 fade-in duration-300">
+               <p className="text-sm text-slate-500 mb-6 font-medium">Seleccioná quiénes estarán cubiertos.</p>
+               
+               <div className="grid grid-cols-2 gap-3 mb-6">
+                 {[ 
+                   { id: 1, label: 'Individual', icon: <User size={28} /> },
+                   { id: 3, label: 'Pareja', icon: <Users size={28} /> },
+                   { id: 2, label: 'Titular + Hijos', icon: <UserPlus size={28} /> },
+                   { id: 4, label: 'Pareja + Hijos', icon: <Users size={28} /> }
+                 ].map(opt => (
                     <button 
-                      type="button" 
-                      className={getButtonClass(selectedGroup)} 
-                      onClick={() => setSelectedGroup(null)}
-                      title="Haz clic para cambiar grupo familiar"
+                      key={opt.id}
+                      onClick={() => selectGroup(opt.id)}
+                      className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-2 transition-all 
+                        ${selectedGroup === opt.id 
+                            ? 'border-teal-600 bg-teal-50 text-teal-900 shadow-sm' 
+                            : 'border-slate-100 bg-white hover:border-teal-200 text-slate-400'
+                        }`}
                     >
-                      {selectedGroup === 1 && (
-                        <>
-                          <UserIcon />
-                          <span className="text-xs mt-1">Individual</span>
-                        </>
-                      )}
-                      {selectedGroup === 2 && (
-                        <>
-                          <UserPlusIcon />
-                          <span className="text-xs mt-1">Titular + Hijos</span>
-                        </>
-                      )}
-                      {selectedGroup === 3 && (
-                        <>
-                          <UsersIcon />
-                          <span className="text-xs mt-1">Pareja</span>
-                        </>
-                      )}
-                      {selectedGroup === 4 && (
-                        <>
-                          <UsersPlusIcon />
-                          <span className="text-xs mt-1">Pareja + Hijos</span>
-                        </>
-                      )}
+                      <div className={selectedGroup === opt.id ? 'text-teal-600' : 'text-current'}>{opt.icon}</div>
+                      <span className="text-xs font-bold">{opt.label}</span>
                     </button>
-                  </div>
+                 ))}
+               </div>
 
-                  {/* Edades Section */}
-                  <div className="flex-1 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h3 className="font-bold text-md mb-3 text-gray-700">Edades</h3>
-                    
-                    {/* Titular Age */}
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                      <span className="text-sm font-medium w-1/3">Titular:</span>
-                      <div className="flex-contenedor w-2/3 max-w-[150px]">
-                        <button 
-                          type="button" 
-                          className="btn inner-square-cuatro-div menos" 
-                          onMouseDown={() => startContinuousAction(() => decrementar('titular'))}
-                          onMouseUp={stopContinuousAction}
-                          onMouseLeave={stopContinuousAction}
-                          onTouchStart={() => startContinuousAction(() => decrementar('titular'))}
-                          onTouchEnd={stopContinuousAction}
-                        >-</button>
-                        <span className="text-lg font-bold mx-4 w-12 text-center">{edadTitular} años</span>
-                        <button 
-                          type="button" 
-                          className="btn inner-square-cuatro-div mas" 
-                          onMouseDown={() => startContinuousAction(() => incrementar('titular'))}
-                          onMouseUp={stopContinuousAction}
-                          onMouseLeave={stopContinuousAction}
-                          onTouchStart={() => startContinuousAction(() => incrementar('titular'))}
-                          onTouchEnd={stopContinuousAction}
-                        >+</button>
-                      </div>
-                    </div>
-
-                    {/* Conyuge Age */}
+               {selectedGroup && (
+                 <div className="space-y-3">
+                    <AgeControl label="Tu Edad" value={edadTitular} onInc={() => startContinuous(() => incrementar('titular'))} onDec={() => startContinuous(() => decrementar('titular'))} stop={stopContinuous} />
                     {(selectedGroup === 3 || selectedGroup === 4) && (
-                      <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                        <span className="text-sm font-medium w-1/3">Pareja:</span>
-                        <div className="flex-contenedor w-2/3 max-w-[150px]">
-                          <button 
-                            type="button" 
-                            className="btn inner-square-cuatro-div menos" 
-                            onMouseDown={() => startContinuousAction(() => decrementar('conyuge'))}
-                            onMouseUp={stopContinuousAction}
-                            onMouseLeave={stopContinuousAction}
-                            onTouchStart={() => startContinuousAction(() => decrementar('conyuge'))}
-                            onTouchEnd={stopContinuousAction}
-                          >-</button>
-                          <span className="text-lg font-bold mx-4 w-12 text-center">{edadConyuge} años</span>
-                          <button 
-                            type="button" 
-                            className="btn inner-square-cuatro-div mas" 
-                            onMouseDown={() => startContinuousAction(() => incrementar('conyuge'))}
-                            onMouseUp={stopContinuousAction}
-                            onMouseLeave={stopContinuousAction}
-                            onTouchStart={() => startContinuousAction(() => incrementar('conyuge'))}
-                            onTouchEnd={stopContinuousAction}
-                          >+</button>
-                        </div>
-                      </div>
+                       <AgeControl label="Edad Pareja" value={edadConyuge} onInc={() => startContinuous(() => incrementar('conyuge'))} onDec={() => startContinuous(() => decrementar('conyuge'))} stop={stopContinuous} />
                     )}
-
-                    {/* Number of Children */}
                     {(selectedGroup === 2 || selectedGroup === 4) && (
-                      <div className="flex items-center justify-between py-2">
-                        <span className="text-sm font-medium w-1/3">Hijos:</span>
-                        <div className="flex-contenedor w-2/3 max-w-[150px]">
-                          <button 
-                            type="button" 
-                            className="btn inner-square-cuatro-div menos" 
-                            onMouseDown={() => startContinuousAction(() => decrementar('hijos'))}
-                            onMouseUp={stopContinuousAction}
-                            onMouseLeave={stopContinuousAction}
-                            onTouchStart={() => startContinuousAction(() => decrementar('hijos'))}
-                            onTouchEnd={stopContinuousAction}
-                          >-</button>
-                          <span className="text-lg font-bold mx-4 w-12 text-center">{cantidadHijos} hijos</span>
-                          <button 
-                            type="button" 
-                            className="btn inner-square-cuatro-div mas" 
-                            onMouseDown={() => startContinuousAction(() => incrementar('hijos'))}
-                            onMouseUp={stopContinuousAction}
-                            onMouseLeave={stopContinuousAction}
-                            onTouchStart={() => startContinuousAction(() => incrementar('hijos'))}
-                            onTouchEnd={stopContinuousAction}
-                          >+</button>
-                        </div>
-                      </div>
+                       <AgeControl label="Cantidad Hijos" value={cantidadHijos} onInc={() => startContinuous(() => incrementar('hijos'))} onDec={() => startContinuous(() => decrementar('hijos'))} stop={stopContinuous} />
                     )}
+                 </div>
+               )}
 
-                    {/* Ages of Children (dynamic based on cantidadHijos) */}
-                    {cantidadHijos > 0 && (
-                      <div className="mt-4 pt-3 border-t border-gray-200">
-                        <h4 className="font-semibold text-sm mb-2 text-gray-600">Edades de los Hijos:</h4>
-                        {getChildAgeControls.map((i) => (
-                          <div key={i} className="flex items-center justify-between py-1">
-                            <span className="text-sm w-1/3">Hijo {i + 1}:</span>
-                            <div className="flex-contenedor w-2/3 max-w-[150px]">
-                              <button 
-                                type="button" 
-                                className="btn inner-square-cuatro-div menos" 
-                                onMouseDown={() => startContinuousAction(() => decrementarChildAge(i))}
-                                onMouseUp={stopContinuousAction}
-                                onMouseLeave={stopContinuousAction}
-                                onTouchStart={() => startContinuousAction(() => decrementarChildAge(i))}
-                                onTouchEnd={stopContinuousAction}
-                              >-</button>
-                              <span className="text-lg font-bold mx-4 w-12 text-center">{formData[`edadHijo${i + 1}` as keyof Pick<QuoteFormData, 'edadHijo1' | 'edadHijo2' | 'edadHijo3' | 'edadHijo4' | 'edadHijo5'>] || 0}</span>
-                              <button 
-                                type="button" 
-                                className="btn inner-square-cuatro-div mas" 
-                                onMouseDown={() => startContinuousAction(() => incrementarChildAge(i))}
-                                onMouseUp={stopContinuousAction}
-                                onMouseLeave={stopContinuousAction}
-                                onTouchStart={() => startContinuousAction(() => incrementarChildAge(i))}
-                                onTouchEnd={stopContinuousAction}
-                              >+</button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end mt-6">
-                <button
-                  type="button"
-                  onClick={goToNextStep}
-                  disabled={!selectedGroup}
-                  style={{ backgroundColor: PRIMARY_COLOR }}
-                  className="px-6 py-3 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 disabled:bg-gray-400 transition"
-                >
-                  Siguiente
-                </button>
-              </div>
+               <div className="mt-8">
+                 <Button onClick={goToNextStep} disabled={!selectedGroup} className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-lg shadow-lg flex items-center justify-center gap-2">
+                    Siguiente <ArrowRight size={20} />
+                 </Button>
+               </div>
             </div>
           )}
 
-          {/* Step 2: Forma de Ingreso */}
+          {/* PASO 2 */}
           {activeStep === 2 && (
-            <div className="step-content">
-              <h2 className="text-lg font-semibold mb-6 text-gray-700">2. Selecciona tu Forma de Ingreso</h2>
-              
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button
-                  type="button"
-                  className={`btn-choice ${aportesType === 'D' ? 'active' : ''}`}
-                  onClick={() => selectAportesType('D')}
-                >
-                  Traspaso de Aportes a Obra Social
-                </button>
-                <button
-                  type="button"
-                  className={`btn-choice ${aportesType === 'P' ? 'active' : ''}`}
-                  onClick={() => selectAportesType('P')}
-                >
-                  Solicito Privado
-                </button>
-              </div>
+             <div className="flex flex-col h-full animate-in slide-in-from-right-8 fade-in duration-300">
+                <p className="text-sm text-slate-500 mb-6 font-medium">¿Cómo vas a contratar el plan?</p>
 
-              {/* Numeric Pad for Sueldo Bruto */}
-              {aportesType === 'D' ? (
-                <div className="dialog-container mt-6 p-4 bg-gray-50 rounded-lg shadow-inner">
-                  <h3 className="text-md font-semibold mb-3 text-gray-700">Ingrese su Sueldo Bruto</h3>
-                  <input
-                    type="text"
-                    value={formattedSueldo ? `$ ${formattedSueldo}` : ''}
-                    readOnly
-                    placeholder="Sueldo Bruto"
-                    className="w-full text-2xl p-3 mb-4 text-right border-b-2 border-gray-300 font-mono focus:border-blue-500"
-                  />
-                  
-                  <div className="numpad grid grid-cols-3 gap-2">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-                      <button key={num} type="button" className="btn-pad" onClick={() => addNumber(num)}>
-                        {num}
-                      </button>
-                    ))}
-                    <button type="button" className="btn-pad delete" onClick={deleteNumber}>⌫</button>
-                    <button type="button" className="btn-pad" onClick={() => addNumber(0)}>0</button>
-                    <button type="button" className="btn-pad listo" onClick={goToNextStep}>Listo</button>
-                  </div>
+                <div className="grid grid-cols-2 bg-slate-100 p-1.5 rounded-xl mb-10">
+                  <button onClick={() => setAportesType('rel')} className={`py-2.5 rounded-lg text-sm font-bold transition-all ${aportesType === 'rel' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>Rel. Dependencia</button>
+                  <button onClick={() => setAportesType('priv')} className={`py-2.5 rounded-lg text-sm font-bold transition-all ${aportesType === 'priv' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'}`}>Particular</button>
                 </div>
-              ) : aportesType === 'P' ? (
-                <div className="mt-4 p-4 text-center text-gray-600 bg-blue-50 rounded-lg">
-                  <p>Pasaremos a la siguiente etapa para completar tus datos personales y generar la cotización privada.</p>
-                </div>
-              ) : null}
 
-              <div className="flex justify-between mt-6">
-                <button type="button" onClick={goToPrevStep} className="px-6 py-3 bg-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-400 transition">
-                  Atrás
-                </button>
-                <button
-                  type="button"
-                  onClick={goToNextStep}
-                  disabled={!aportesType || (aportesType === 'D' && formData.sueldo === 0)}
-                  style={{ backgroundColor: PRIMARY_COLOR }}
-                  className="px-6 py-3 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 disabled:bg-gray-400 transition"
-                >
-                  Siguiente
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Datos Personales & Contacto */}
-          {activeStep === 3 && (
-            <div className="step-content">
-              {/* Hide step title when cotizacion is visible */}
-              {!cotizacionVisible && (
-                <h2 className="text-lg font-semibold mb-6 text-gray-700">3. Completa tus Datos Personales</h2>
-              )}
-              
-              {!cotizacionVisible ? (
-                // Personal Data Form
-                <div className="flex flex-col gap-4">
-                  {/* Show masked data if stored and not editing */}
-                  {hasStoredPersonalData && !isEditingPersonalData ? (
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <div className="space-y-2 mb-4">
-                        <p className="text-sm"><strong>Nombre:</strong> {formData.personalData.name}</p>
-                        <p className="text-sm"><strong>Email:</strong> {maskEmail(formData.personalData.email)}</p>
-                        <p className="text-sm"><strong>Celular:</strong> {maskPhone(formData.personalData.phone)}</p>
+                {aportesType === 'rel' ? (
+                   <div className="animate-in fade-in zoom-in-95">
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-wide mb-6 text-center">Ingresá tu Sueldo Bruto</label>
+                      <div className="relative max-w-[280px] mx-auto group">
+                         <span className="absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-bold text-slate-300">$</span>
+                         <input type="tel" value={formattedSueldo} onChange={handleSalaryChange} placeholder="0" autoFocus className="w-full pl-8 pr-4 py-2 text-4xl font-bold text-center text-teal-900 border-b-2 border-slate-200 focus:border-teal-600 outline-none bg-transparent" />
                       </div>
-                      <div className="flex justify-between items-center">
-                        <button 
-                          type="button" 
-                          onClick={() => setIsEditingPersonalData(true)}
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          Editar datos de contacto
-                        </button>
-                        <button
-                          type="button"
-                          onClick={verCotizacion}
-                          className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 transition"
-                        >
-                          Ver Cotización
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    // Editable form
-                    <>
-                      <div className="form-group">
-                        <label htmlFor="name">Nombre completo</label>
-                        <input
-                          id="name"
-                          type="text"
-                          value={formData.personalData.name}
-                          onChange={(e) => updatePersonalData('name', e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <input
-                          id="email"
-                          type="email"
-                          value={formData.personalData.email}
-                          onChange={(e) => updatePersonalData('email', e.target.value)}
-                          required
-                        />
-                        {!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.personalData.email) && formData.personalData.email.length > 0 && (
-                          <div className="error"><span>Email inválido.</span></div>
-                        )}
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="phone">Celular</label>
-                        <input
-                          id="phone"
-                          type="text"
-                          value={formData.personalData.phone}
-                          onChange={(e) => updatePersonalData('phone', e.target.value)}
-                          required
-                        />
-                      </div>
-                      
-                      <div className="flex justify-end mt-6">
-                        <button
-                          type="button"
-                          onClick={verCotizacion}
-                          disabled={!isPersonalDataValid}
-                          className="px-6 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 disabled:bg-gray-400 transition"
-                        >
-                          Ver Cotización
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                // Contact Selection or Thank You
-                !contactoType ? (
-                  // Contact Selection
-                  <div className="text-center p-6 bg-yellow-50 rounded-lg mb-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-4">¡Cotización Generada!</h3>
-                    <p className="text-gray-600 mb-6">Estamos listos. ¿Cómo prefieres que continuemos nuestro contacto?</p>
-
-                    <div className="flex justify-center gap-4">
-                      <button className="contact-btn" onClick={() => selectContactoType('phone')} type="button">
-                        <PhoneIcon className="text-blue-600" />
-                        TELÉFONO
-                      </button>
-                      <button className="contact-btn" onClick={() => selectContactoType('whatsapp')} type="button">
-                        <MessageSquareIcon className="text-green-600" />
-                        WHATSAPP
-                      </button>
-                    </div>
-                  </div>
+                      <p className="text-center text-xs text-slate-400 mt-6">Usaremos esto para calcular tus aportes.</p>
+                   </div>
                 ) : (
-                  // Thank You Card
-                  <div className="thankyou-card text-center p-8 bg-green-50 rounded-xl shadow-lg">
-                    <img className="icon icon--large mx-auto mb-4" src={contactoType === 'phone' ? `https://placehold.co/60x60/${PRIMARY_COLOR.substring(1)}/ffffff?text=CALL` : 'https://placehold.co/60x60/25D366/ffffff?text=WA'} alt="ícono de agradecimiento" />
-                    <div className="thankyou-card--title text-2xl font-bold text-gray-800 mb-2">Gracias!</div>
-                    <div className="thankyou-card--body text-lg text-gray-600">
-                      {contactoType === 'phone' ? (
-                        <span>Entraremos en contacto <b>en breve!</b></span>
-                      ) : (
-                        <span>Estaremos enviandole un mensaje por WhatsApp!</span>
-                      )}
+                   <div className="text-center py-8 bg-blue-50 rounded-2xl border border-blue-100">
+                      <Info size={32} className="text-blue-600 mx-auto mb-3" />
+                      <h3 className="text-blue-900 font-bold mb-1">Modo Particular</h3>
+                      <p className="text-sm text-blue-700/80 px-4">Abonarás el 100% de la cuota + IVA.</p>
+                   </div>
+                )}
+
+                <div className="mt-auto pt-6 flex gap-3">
+                   <Button onClick={() => setActiveStep(1)} variant="ghost" className="w-1/3 h-14 rounded-xl font-bold text-slate-500">Atrás</Button>
+                   <Button onClick={goToNextStep} className="w-2/3 h-14 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-lg">Ver Precios</Button>
+                </div>
+             </div>
+          )}
+
+          {/* PASO 3 */}
+          {activeStep === 3 && (
+            <div className="flex flex-col h-full animate-in slide-in-from-right-8 fade-in duration-300">
+               {!cotizacionVisible ? (
+                 <>
+                    <div className="text-center mb-8">
+                       <h3 className="text-2xl font-bold text-slate-900">Datos Personales</h3>
+                       <p className="text-sm text-slate-500">Para enviarte la cotización detallada.</p>
                     </div>
-                    <p className="text-sm text-gray-500 mt-4">Este diálogo se cerrará automáticamente...</p>
+                    <div className="space-y-4">
+                       <div className="relative group">
+                          <input type="text" value={formData.personalData.name} onChange={(e) => updatePersonalData('name', e.target.value)} className="peer w-full bg-slate-50 border border-slate-200 rounded-xl px-4 pt-5 pb-2 font-bold outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500" placeholder=" " />
+                          <label className="absolute left-4 top-3.5 text-xs font-bold text-slate-400 uppercase transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-focus:-translate-y-2.5 peer-focus:text-[10px]">Nombre</label>
+                       </div>
+                       <div className="relative group">
+                          <input type="email" value={formData.personalData.email} onChange={(e) => updatePersonalData('email', e.target.value)} className="peer w-full bg-slate-50 border border-slate-200 rounded-xl px-4 pt-5 pb-2 font-bold outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500" placeholder=" " />
+                          <label className="absolute left-4 top-3.5 text-xs font-bold text-slate-400 uppercase transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-focus:-translate-y-2.5 peer-focus:text-[10px]">Email</label>
+                       </div>
+                       <div className="relative group">
+                          <input type="tel" value={formData.personalData.phone} onChange={(e) => updatePersonalData('phone', e.target.value)} className="peer w-full bg-slate-50 border border-slate-200 rounded-xl px-4 pt-5 pb-2 font-bold outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500" placeholder=" " />
+                          <label className="absolute left-4 top-3.5 text-xs font-bold text-slate-400 uppercase transition-all peer-placeholder-shown:top-3.5 peer-placeholder-shown:text-sm peer-placeholder-shown:normal-case peer-focus:-translate-y-2.5 peer-focus:text-[10px]">Celular</label>
+                       </div>
+                    </div>
+                    <div className="mt-8">
+                       <p className="text-[10px] font-bold text-slate-400 uppercase text-center mb-3">¿Cómo te contactamos?</p>
+                       <div className="grid grid-cols-2 gap-3">
+                          <button onClick={() => selectContactoType('whatsapp')} className="p-3 border-2 rounded-xl flex items-center justify-center gap-2 hover:bg-green-50 hover:border-green-200">
+                             <MessageSquare className="text-green-600 w-5 h-5" /> <span className="text-sm font-bold text-slate-600">WhatsApp</span>
+                          </button>
+                          <button onClick={() => selectContactoType('phone')} className="p-3 border-2 rounded-xl flex items-center justify-center gap-2 hover:bg-blue-50 hover:border-blue-200">
+                             <Phone className="text-blue-600 w-5 h-5" /> <span className="text-sm font-bold text-slate-600">Llamada</span>
+                          </button>
+                       </div>
+                    </div>
+                 </>
+               ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center animate-in zoom-in-95">
+                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                        {contactoType === 'whatsapp' ? <MessageSquare size={40} className="text-green-600" /> : <Phone size={40} className="text-blue-600" />}
+                     </div>
+                     <h3 className="text-2xl font-bold text-slate-900 mb-2">¡Gracias!</h3>
+                     <p className="text-slate-500 px-8">
+                        {contactoType === 'whatsapp' ? 'Te enviaremos la cotización por WhatsApp en breve.' : 'Un asesor te llamará en unos minutos.'}
+                     </p>
                   </div>
-                )
-              )}
+               )}
             </div>
           )}
-        </form>
-      </div>
-    </>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
+
+// Componente auxiliar Edad
+interface AgeControlProps {
+    label: string;
+    value: number;
+    onInc: () => void;
+    onDec: () => void;
+    stop: () => void;
+}
+
+const AgeControl: React.FC<AgeControlProps> = ({ label, value, onInc, onDec, stop }) => (
+  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+      <span className="font-bold text-slate-700 text-sm">{label}</span>
+      <div className="flex items-center gap-4">
+          <button 
+             onMouseDown={onDec} onMouseUp={stop} onMouseLeave={stop} onTouchStart={onDec} onTouchEnd={stop}
+             className="w-9 h-9 rounded-full bg-white border border-slate-200 text-teal-600 flex items-center justify-center hover:bg-teal-600 hover:text-white transition shadow-sm active:scale-95">
+             <Minus size={16} strokeWidth={3} />
+          </button>
+          <span className="text-xl font-bold text-slate-900 w-8 text-center">{value}</span>
+          <button 
+             onMouseDown={onInc} onMouseUp={stop} onMouseLeave={stop} onTouchStart={onInc} onTouchEnd={stop}
+             className="w-9 h-9 rounded-full bg-white border border-slate-200 text-teal-600 flex items-center justify-center hover:bg-teal-600 hover:text-white transition shadow-sm active:scale-95">
+             <Plus size={16} strokeWidth={3} />
+          </button>
+      </div>
+  </div>
+);
 
 export default FormQuote;

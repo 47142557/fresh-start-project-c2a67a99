@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import Layout from '@/layouts/Layout';
+import { Mail, Loader2, KeyRound, ArrowLeft, CheckCircle2, ArrowRight } from 'lucide-react';
 
 const ForgotPasswordPage = () => {
   const { toast } = useToast();
@@ -36,6 +37,7 @@ const ForgotPasswordPage = () => {
       toast({
         title: 'Correo enviado',
         description: 'Revisa tu bandeja de entrada para restablecer tu contraseña.',
+        className: "bg-teal-50 border-teal-200 text-teal-900"
       });
     } catch (err) {
       toast({
@@ -50,59 +52,107 @@ const ForgotPasswordPage = () => {
 
   return (
     <Layout>
-      <div className="min-h-[80vh] flex items-center justify-center px-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Recuperar Contraseña
-            </CardTitle>
-            <CardDescription className="text-center">
-              {emailSent
-                ? 'Hemos enviado un enlace a tu correo'
-                : 'Ingresa tu correo para recibir un enlace de recuperación'}
-            </CardDescription>
+      <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-slate-50 relative overflow-hidden">
+        
+        <Card className="w-full max-w-md border-0 shadow-2xl rounded-3xl overflow-hidden bg-white z-10">
+          
+          {/* HEADER */}
+          <CardHeader className="space-y-3 text-center pt-8 pb-2 bg-white">
+            <div className="mx-auto w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mb-2">
+              {emailSent ? (
+                <CheckCircle2 className="w-8 h-8 text-teal-600" />
+              ) : (
+                <KeyRound className="w-8 h-8 text-teal-600" />
+              )}
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                {emailSent ? '¡Correo Enviado!' : 'Recuperar Contraseña'}
+              </h1>
+              <p className="text-slate-500 text-sm mt-1 px-4">
+                {emailSent
+                  ? `Hemos enviado las instrucciones a ${email}`
+                  : 'Ingresa tu correo y te enviaremos un enlace para volver a entrar.'}
+              </p>
+            </div>
           </CardHeader>
+
           {!emailSent ? (
             <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5 px-8 pt-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Correo electrónico</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="tu@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={isLoading}
-                  />
+                  <Label htmlFor="email" className="text-xs font-bold text-slate-500 uppercase">Correo electrónico</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={isLoading}
+                      className="pl-10 rounded-xl border-slate-200 focus-visible:ring-teal-500 bg-slate-50/50 focus:bg-white transition-all"
+                    />
+                  </div>
                 </div>
               </CardContent>
-              <CardFooter className="flex flex-col space-y-4">
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Enviando...' : 'Enviar enlace'}
+
+              <CardFooter className="flex flex-col space-y-6 px-8 pb-8">
+                <Button 
+                    type="submit" 
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold h-12 rounded-xl shadow-lg shadow-orange-100 transition-all active:scale-95" 
+                    disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Enviando...
+                    </>
+                  ) : (
+                    <>
+                        Enviar enlace <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                  )}
                 </Button>
+                
                 <Link
                   to="/auth/login"
-                  className="text-sm text-primary hover:underline text-center"
+                  className="flex items-center gap-2 text-sm text-slate-500 hover:text-teal-600 font-medium transition-colors"
                 >
-                  Volver a iniciar sesión
+                  <ArrowLeft className="h-4 w-4" /> Volver a iniciar sesión
                 </Link>
               </CardFooter>
             </form>
           ) : (
-            <CardFooter className="flex flex-col space-y-4">
-              <p className="text-sm text-muted-foreground text-center">
-                Si no recibes el correo en unos minutos, revisa tu carpeta de spam.
-              </p>
-              <Link to="/auth/login">
-                <Button variant="outline" className="w-full">
+            <CardFooter className="flex flex-col space-y-6 px-8 pb-8 pt-4">
+              <div className="bg-slate-50 p-4 rounded-xl text-center">
+                <p className="text-xs text-slate-500">
+                  Si no recibes el correo en unos minutos, revisa tu carpeta de spam o intenta nuevamente.
+                </p>
+              </div>
+              
+              <Link to="/auth/login" className="w-full">
+                <Button variant="outline" className="w-full h-12 rounded-xl border-slate-200 text-slate-600 hover:text-teal-600 hover:border-teal-200 hover:bg-teal-50 font-bold transition-all">
                   Volver a iniciar sesión
                 </Button>
               </Link>
+              
+              <button 
+                onClick={() => setEmailSent(false)}
+                className="text-xs text-slate-400 hover:text-slate-600 underline"
+              >
+                Probar con otro correo
+              </button>
             </CardFooter>
           )}
         </Card>
+
+        {/* Decoración de fondo */}
+        <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+            <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-teal-50 rounded-full blur-3xl opacity-50"></div>
+            <div className="absolute bottom-[-10%] right-[-5%] w-96 h-96 bg-orange-50 rounded-full blur-3xl opacity-50"></div>
+        </div>
+
       </div>
     </Layout>
   );
