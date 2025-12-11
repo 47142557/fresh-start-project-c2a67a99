@@ -1,284 +1,117 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { useToast } from "@/hooks/use-toast";
 import { getQuoteByToken, recordQuoteView, PublicQuote } from "@/services/quotes.service";
 
-// --- COMPONENTS ---
-import { QuoteWizard } from "@/modules/salud/components/organisms/QuoteWizard";
-import { QuoteLoadingSkeleton } from "@/modules/salud/components/molecules/QuoteLoadingSkeleton";
-import { QuoteErrorState } from "@/modules/salud/components/molecules/QuoteErrorState"; // Asegúrate que exista o usa un div
-import { QuoteAccessForm } from "@/modules/salud/components/molecules/QuoteAccessForm";
+// Componentes
 import { QuoteHeader } from "@/modules/salud/components/organisms/QuoteHeader";
-import { QuotePlansList } from "@/modules/salud/components/organisms/QuotePlansList";
-import { QuoteActions } from "@/modules/salud/components/organisms/QuoteActions";
+import { QuotePlanCard } from "@/modules/salud/components/molecules/QuotePlanCard";
+import { QuoteLoadingSkeleton } from "@/modules/salud/components/molecules/QuoteLoadingSkeleton";
+import { QuoteAccessForm } from "@/modules/salud/components/molecules/QuoteAccessForm";
 import { QuoteFooter } from "@/modules/salud/components/organisms/QuoteFooter";
-
-// --- TYPES ---
-interface Plan {
-  id: string;
-  name: string;
-  empresa: string;
-  precio: number;
-  // Agrega aquí otras props que necesite tu QuotePlansList
-}
-
-// --- CUSTOM HOOK ---
-const usePublicQuote = (token: string | undefined) => {
-  const [searchParams] = useSearchParams();
-  const { toast } = useToast();
-
-  const [quote, setQuote] = useState<PublicQuote | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [requiresCode, setRequiresCode] = useState(false);
-  const [accessCode, setAccessCode] = useState(searchParams.get("code") || "");
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const loadQuote = useCallback(async () => {
-    if (!token) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { quote: fetchedQuote, error: fetchError } = await getQuoteByToken(token);
-
-      if (fetchError || !fetchedQuote) {
-        setError("Esta cotización no existe o ya no está disponible.");
-        return;
-      }
-
-      const providedCode = searchParams.get("code");
-      const viewRecorded = await recordQuoteView(
-        fetchedQuote.id,
-        providedCode || undefined,
-        navigator.userAgent,
-        document.referrer
-      );
-
-      if (viewRecorded) {
-        setQuote(fetchedQuote);
-      } else {
-        setQuote(fetchedQuote);
-        setRequiresCode(true);
-      }
-    } catch (err) {
-      console.error("Error loading quote:", err);
-      setError("Ocurrió un error al cargar la cotización.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [token, searchParams]);
-
-  useEffect(() => {
-    if (token) {
-      loadQuote();
-    }
-  }, [token, loadQuote]);
-
-  const verifyAccessCode = useCallback(async () => {
-    if (!token || !accessCode || !quote) return;
-
-    setIsVerifying(true);
-
-    try {
-      const viewRecorded = await recordQuoteView(
-        quote.id,
-        accessCode,
-        navigator.userAgent,
-        document.referrer
-      );
-
-      if (viewRecorded) {
-        setRequiresCode(false);
-        toast({
-          title: "Acceso concedido",
-          description: "Código verificado correctamente.",
-        });
-      } else {
-        toast({
-          title: "Código incorrecto",
-          description: "El código de acceso no es válido.",
-          variant: "destructive",
-        });
-      }
-    } catch (err) {
-      console.error("Error verifying code:", err);
-      toast({
-        title: "Error",
-        description: "Ocurrió un error al verificar el código.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsVerifying(false);
-    }
-  }, [token, accessCode, quote, toast]);
-
-  const handleDownloadPdf = useCallback(async () => {
-    if (!quote?.pdf_html) {
-      toast({
-        title: "PDF no disponible",
-        description: "Esta cotización no tiene un PDF asociado.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsDownloading(true);
-
-    try {
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-      const functionUrl = `${SUPABASE_URL}/functions/v1/generate-pdf`;
-
-      const response = await fetch(functionUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/pdf",
-        },
-        body: JSON.stringify({ htmlContent: quote.pdf_html }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Error generating PDF");
-      }
-
-      const pdfData = await response.arrayBuffer();
-      const blob = new Blob([pdfData], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `cotizacion-${quote.quote_name || quote.id.slice(0, 8)}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      toast({
-        title: "PDF descargado",
-        description: "El archivo se ha descargado correctamente.",
-      });
-    } catch (err) {
-      console.error("Error downloading PDF:", err);
-      toast({
-        title: "Error",
-        description: "No se pudo descargar el PDF.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDownloading(false);
-    }
-  }, [quote, toast]);
-
-  const getPlansFromFormData = useCallback((): Plan[] => {
-    if (!quote?.form_data) return [];
-    // Aseguramos el tipado correcto
-    const formData = quote.form_data as unknown as { plans?: Plan[] };
-    return formData.plans || [];
-  }, [quote]);
-
-  return {
-    quote,
-    isLoading,
-    error,
-    requiresCode,
-    accessCode,
-    setAccessCode,
-    isVerifying,
-    isDownloading,
-    verifyAccessCode,
-    handleDownloadPdf,
-    plans: getPlansFromFormData(),
-  };
-};
+import { MessageCircle } from "lucide-react";
 
 // --- MAIN COMPONENT ---
 export const PublicQuotePage = () => {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
   
-  // 1. AQUI DEFINIMOS EL ESTADO QUE FALTABA
-  const [showModal, setShowModal] = useState(false);
+  const [quote, setQuote] = useState<PublicQuote | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [requiresCode, setRequiresCode] = useState(false);
+  const [accessCode, setAccessCode] = useState(searchParams.get("code") || "");
 
-  const {
-    quote,
-    isLoading,
-    error,
-    requiresCode,
-    accessCode,
-    setAccessCode,
-    isVerifying,
-    isDownloading,
-    verifyAccessCode,
-    handleDownloadPdf,
-    plans,
-  } = usePublicQuote(token);
+  // --- CARGA DE DATOS ---
+  useEffect(() => {
+    const load = async () => {
+        if (!token) return;
+        setIsLoading(true);
+        try {
+            const { quote: data, error } = await getQuoteByToken(token);
+            if (error || !data) {
+                // Manejar error
+            } else {
+                // Intentar registrar vista (Tracking)
+                const viewed = await recordQuoteView(data.id, searchParams.get("code") || undefined);
+                if (viewed) setQuote(data);
+                else {
+                    setQuote(data);
+                    setRequiresCode(true); // Pedir código si es privado
+                }
+            }
+        } catch (e) { console.error(e); }
+        finally { setIsLoading(false); }
+    };
+    load();
+  }, [token, searchParams]);
 
-  // --- EARLY RETURNS (Estados de carga/error) ---
+  // --- RENDER ---
+  if (isLoading) return <QuoteLoadingSkeleton />;
+  
+  if (requiresCode) return <QuoteAccessForm accessCode={accessCode} onAccessCodeChange={setAccessCode} onSubmit={() => {}} isVerifying={false} />;
 
-  if (isLoading) {
-    return <QuoteLoadingSkeleton />;
-  }
+  if (!quote) return <div className="min-h-screen flex items-center justify-center">Cotización no encontrada</div>;
 
-  if (error) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-             <QuoteErrorState message={error} />
-        </div>
-    );
-  }
+  // Extraer planes del JSON
+  const plans = (quote.form_data as any).plans || [];
 
-  if (requiresCode) {
-    return (
-      <QuoteAccessForm
-        accessCode={accessCode}
-        onAccessCodeChange={setAccessCode}
-        onSubmit={verifyAccessCode}
-        isVerifying={isVerifying}
-      />
-    );
-  }
-
-  // --- RENDER FINAL (Página + Modal) ---
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 font-sans">
+    <div className="min-h-screen bg-slate-100 font-sans pb-20">
         <Helmet>
-            <title>{quote?.quote_name ? `Cotización: ${quote.quote_name}` : 'Tu Cotización de Salud'}</title>
+            <title>{quote.quote_name || "Tu Cotización"} | Vitalia</title>
         </Helmet>
 
-        {/* 1. Header con datos del cliente */}
-        <QuoteHeader quote={quote} />
-
-        <div className="container mx-auto px-4 max-w-7xl space-y-8 mt-8">
-            
-            {/* 2. Botonera de Acciones (Descargar / Recotizar) */}
-            <QuoteActions 
-                onDownload={handleDownloadPdf} 
-                isDownloading={isDownloading}
-                onRecalculate={() => setShowModal(true)} // <-- Abre el modal
-            />
-
-            {/* 3. Lista de Planes (Cards) */}
-            <QuotePlansList plans={plans} />
-
-        </div>
-
-        {/* 4. Footer */}
-        <QuoteFooter />
-
-        {/* 5. MODAL WIZARD (Flotante) */}
-        <QuoteWizard 
-            isOpen={showModal} 
-            onClose={() => setShowModal(false)}
-            onComplete={(data) => {
-                console.log("Nueva cotización solicitada:", data);
-                setShowModal(false);
-                // Aquí podrías redirigir a una nueva URL o actualizar el estado
-            }}
+        {/* 1. HEADER CON DATOS */}
+        <QuoteHeader 
+            quoteName={quote.quote_name}
+            createdAt={quote.created_at}
+            familyGroup={(quote.form_data as any).family_group}
+            requestType={(quote.form_data as any).request_type}
+            residenceZone={(quote.form_data as any).residence_zone}
+            customMessage={quote.custom_message}
+            advisorName="Hernán Pérez" // Esto debería venir de la DB del vendedor
+            advisorPhone="11 1234-5678"
         />
+
+        <main className="container mx-auto px-4 max-w-4xl">
+            
+            {/* Título de Sección */}
+            <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-slate-800">Análisis de Planes Sugeridos</h2>
+                <p className="text-slate-500">Seleccionamos las mejores opciones para tu perfil.</p>
+            </div>
+
+            {/* 2. LISTA DE PLANES (CARDS) */}
+            <div className="space-y-6">
+                {plans.map((plan: any, idx: number) => (
+                    <QuotePlanCard 
+                        key={plan.id || idx}
+                        name={plan.name}
+                        empresa={plan.empresa}
+                        precio={plan.precio}
+                        isRecommended={idx === 0} // Asumimos que el primero es el recomendado
+                    />
+                ))}
+            </div>
+
+            {/* 3. CAJA DE ACCIÓN FINAL (CTA) */}
+            <div className="mt-12 bg-white border-2 border-dashed border-slate-300 rounded-3xl p-8 text-center">
+                <h3 className="text-xl font-bold text-slate-800 mb-2">¿Tenés dudas o querés avanzar?</h3>
+                <p className="text-slate-500 mb-6 max-w-md mx-auto">
+                    Estoy disponible para responder tus consultas y ayudarte con el alta del plan que elijas.
+                </p>
+                <button 
+                    onClick={() => window.open("https://wa.me/...", "_blank")}
+                    className="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-full text-lg shadow-lg shadow-green-100 transition-transform hover:scale-105"
+                >
+                    <MessageCircle size={24} />
+                    Hablar con mi Asesor
+                </button>
+            </div>
+
+        </main>
+
+        <QuoteFooter />
     </div>
   );
 };
-
-export default PublicQuotePage;
