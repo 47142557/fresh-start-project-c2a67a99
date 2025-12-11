@@ -22,7 +22,7 @@ export const HeroSection = ({ onQuoteClick }: HeroSectionProps) => {
           className="w-full h-full object-cover"
         >
           {/* Video de stock gratuito (Pexels/Coverr) - Reemplázalo con el tuyo si tienes */}
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-family-walking-together-in-nature-39767-large.mp4" type="video/mp4" />
+          <source src="src/assets/videos/queplanvideo.mp4" type="video/mp4" />
         </video>
       </div>
 

@@ -19,6 +19,7 @@ import {
   VendorQuotesPage,
   VendorMarketingPage,
 } from "./modules/vendor/pages";
+import { ChatwootWidget } from "@/components/ChatwootWidget"; // <--- IMPORTAR
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+         <ChatwootWidget /> 
 <Routes>
   <Route path="/" element={<Index />} />
   <Route path="/resultados" element={<ResultadosPage />} />
@@ -63,6 +65,7 @@ const App = () => (
       </TooltipProvider>
     </HelmetProvider>
   </QueryClientProvider>
+  
 );
 
 export default App;

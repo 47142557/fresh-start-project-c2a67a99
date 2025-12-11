@@ -129,11 +129,46 @@ export const FormQuote: React.FC<FormQuoteProps> = ({ isOpen, onClose, onComplet
   const formattedSueldo = sueldoInput ? new Intl.NumberFormat('es-AR').format(parseInt(sueldoInput)) : '';
 
   const handleFinish = async () => {
-    const quoteData = { ...formData, contact: { ...formData.personalData, method: contactoType } };
-    if (onComplete) onComplete(quoteData); 
-    else {
-       toast({ title: "Cotización enviada", description: "Te contactaremos pronto." });
-       setTimeout(onClose, 2000);
+      const quoteData = { ...formData, contact: { ...formData.personalData, method: contactoType } };
+    
+    // 1. Identificar usuario en Chatwoot (El truco de consultor)
+    if ((window as any).$chatwoot) {
+        (window as any).$chatwoot.setUser(formData.personalData.email, {
+            name: formData.personalData.name,
+            phone_number: formData.personalData.phone,
+        });
+        
+        // Etiquetar para que n8n sepa qué hacer
+        (window as any).$chatwoot.addTags(['cotizacion_web', 'lead_caliente']);
+    }
+
+    if (onComplete) {
+       onComplete(quoteData); 
+    } else {
+       // Cierra el modal visualmente
+       onClose();
+
+       // 2. Feedback al usuario + TU MARCA PERSONAL
+       toast({ 
+         title: "¡Cotización en proceso!", 
+         description: "Tu asistente inteligente está analizando los datos...",
+         // Aquí metemos tu marca sutilmente en el mensaje de éxito
+         action: (
+            <div className="flex flex-col items-end gap-1">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider">Tecnología</span>
+                <span className="text-xs font-bold text-teal-600">By [Tu Nombre/Agencia]</span>
+            </div>
+         ),
+         duration: 5000,
+       });
+
+       // 3. Abrir el chat automáticamente después de 1.5 segundos
+       // (Damos tiempo a que lea el toast y se cierre el modal)
+       setTimeout(() => {
+          if ((window as any).$chatwoot) {
+            (window as any).$chatwoot.toggle("open");
+          }
+       }, 1500);
     }
   };
 
